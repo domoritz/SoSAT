@@ -1,0 +1,12 @@
+def parse(f):
+    num_vars = 0
+    clauses = []
+    for line in f:
+        pline = line.split()
+        if pline[0] != 'c':
+            if pline[0] == 'p':
+                assert pline[1] == 'cnf'
+                num_vars = int(pline[2])
+            else:
+                clauses.append(map(int, pline))
+    return num_vars, clauses

@@ -1,4 +1,3 @@
-so-sat
-======
+# SoSAT
 
 SAT solver
