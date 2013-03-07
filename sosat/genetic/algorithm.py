@@ -2,10 +2,12 @@ import numpy as np
 
 
 class GeneticAlgorithm(object):
-    NUM_INDIVIDUALS = 10
+    NUM_CHROMOSOMES = 10
+    ELIRATE = 0.1
+    NUM_ELITES = NUM_CHROMOSOMES * ELIRATE
     SEED = 42
 
-    def __init__(self, num_vars, clauses):
+    def __init__(self, num_vars=0, clauses=[]):
         self.num_vars = num_vars
         self.clauses = clauses
         print num_vars, clauses
@@ -14,15 +16,24 @@ class GeneticAlgorithm(object):
 
         self.generate_initial_population()
 
+    def calculate_fitness(self):
+        pass
+
+    def mutate_chromosomes(self, array):
+        where_to_toggle = np.random.randint(0, self.num_vars, size=len(array))
+        for i, x in enumerate(where_to_toggle):
+            array[i][x] = not array[i][x]
+
     def generate_initial_population(self):
-        size = self.num_vars * self.NUM_INDIVIDUALS
+        size = self.num_vars * self.NUM_CHROMOSOMES
         # generate list from random choice
         self.pop = np.random.choice([True, False], size)
         # we want bool, so let's convert to bool
         self.pop = self.pop.astype(np.bool, copy=False)
         # amek an array from the list
-        self.pop = self.pop.reshape(self.num_vars, self.NUM_INDIVIDUALS)
+        self.pop = self.pop.reshape(self.num_vars, self.NUM_CHROMOSOMES)
         print self.pop
 
     def run(self):
-        print "run"
+        while True:
+            break
