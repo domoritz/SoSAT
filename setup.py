@@ -5,7 +5,7 @@ setup(
     version='0.0.1',
     author='Matthias Springer, Dominik Moritz',
     author_email='matthias.springer@student.hpi.uni-potsdam.de, dominik.moritz@student.hpi.uni-potsdam.de',
-    packages=['sosat', 'sosat.test'],
+    packages=['sosat'],
     scripts=[],
     url='https://github.com/domoritz/SoSAT',
     license='LICENSE.txt',
