@@ -14,6 +14,7 @@ class TestSequenceFunctions(unittest.TestCase):
         a = ga.GeneticAlgorithm(self.num_vars, self.clauses)
         assert_equal(a.num_vars, self.num_vars)
         assert_equal(a.clauses, self.clauses)
+        assert_equal(a.pop.shape, (20, a.NUM_INDIVIDUALS))
 
 if __name__ == '__main__':
     unittest.main()
