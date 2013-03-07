@@ -1,5 +1,4 @@
 import numpy as np
-import numexpr as ne
 
 
 class GeneticAlgorithm(object):

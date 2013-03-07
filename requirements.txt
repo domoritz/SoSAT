@@ -1,3 +1,2 @@
 nose
 numpy>=1.7
-numexpr

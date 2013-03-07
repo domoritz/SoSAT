@@ -13,7 +13,7 @@ setup(
     long_description=open('README.md').read(),
     install_requires=[
         'nose',
-        'numpy>=1.7',
-        'numexpr'
+        'numpy>=1.7'
+        #'numexpr'
     ],
 )
