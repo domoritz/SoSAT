@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import numexpr as ne
 from nose.tools import assert_equal
 
 import sosat.genetic as ga
