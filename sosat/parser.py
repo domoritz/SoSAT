@@ -12,5 +12,5 @@ def parse(f):
                 assert pline[1] == 'cnf'
                 num_vars = int(pline[2])
             else:
-                clauses.append(map(int, pline))
+                clauses.append(map(int, pline)[:-1])
     return num_vars, clauses
