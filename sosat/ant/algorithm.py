@@ -2,12 +2,15 @@ import numpy as np
 
 class AntColonyAlgorithm(object):
    SEED = 42
-   NUM_ANTS = 1000             # range: [1, inf)
+   NUM_ANTS = 150             # range: [1, inf)
    EXP_PH = 1                 # range: (-inf, inf)
    EXP_MCV = 1                # range: (-inf, inf)
    CHOOSE_ALLOW_CONTRADICTIONS = False
-   PH_REDUCE_FACTOR = 0.1    # range: (0, 1)
+   PH_REDUCE_FACTOR = 0.15    # range: (0, 1)
    MAX_ITERATIONS = 10000
+   BLUR_ITERATIONS = 3
+   BLUR_BASIC = 0.9
+   BLUR_DECLINE = 50.0
    WEIGHT_ADAPTION_DURATION = 250
 
    def __init__(self, num_vars=0, clauses=[]):
@@ -98,16 +101,12 @@ class AntColonyAlgorithm(object):
       
       return chosen     
 
-   def update_clause_weights(self, chosen_nodes):
-      self.clause_weights += 1.0
-      self.clause_weights 
-
    def evaluate_solution(self, chosen_nodes):
       evaluation = 0
       solved_clauses = 0
        
       for c_idx in range(len(self.clauses)):
-         if not -1 in chosen_nodes-self.clauses[c_idx]:
+         if 2 in chosen_nodes+self.clauses[c_idx]:
             evaluation += self.clause_weights[c_idx]
             solved_clauses += 1
          elif self.solution_counter == self.WEIGHT_ADAPTION_DURATION:
@@ -117,13 +116,23 @@ class AntColonyAlgorithm(object):
          self.solution_counter = 0
       
       self.solution_counter += 1
-
+      
+      #print "evaluation: ", chosen_nodes, evaluation, solved_clauses
       return evaluation, solved_clauses
 
    def update_pheromones(self, chosen_nodes, evaluation):
       self.pheromones = self.pheromones * (1.0-self.PH_REDUCE_FACTOR) + chosen_nodes*evaluation
+      self.update_pheromones_bounds()
+
+   def update_pheromones_bounds(self):
       self.pheromones[self.pheromones < self.PH_MIN] = self.PH_MIN
       self.pheromones[self.pheromones > self.PH_MAX] = self.PH_MAX
+
+   def blur_pheromones(self, max_divergence):
+      self.pheromones += self.pheromones * (np.random.rand(self.pheromones.size) * max_divergence * 2 - max_divergence)
+      self.update_pheromones_bounds()
+      self.update_probabilities()
+      #print "BLUR: ", max_divergence, self.pheromones
 
    def run(self):
       for i in range(self.MAX_ITERATIONS):
@@ -150,6 +159,7 @@ class AntColonyAlgorithm(object):
          print "Pheromones: ", self.pheromones
          self.update_probabilities()
          print "Probablilities: ", self.probabilities
-
-
+         
+         if i > 0 and i%self.BLUR_ITERATIONS == 0:
+            self.blur_pheromones(self.BLUR_BASIC * np.e**(-i/self.BLUR_DECLINE))
 
