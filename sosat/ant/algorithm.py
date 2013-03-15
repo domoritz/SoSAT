@@ -1,6 +1,7 @@
 import numpy as np
 import sosat.algorithm as algo
 
+
 class AntColonyAlgorithm(algo.Algorithm):
     NUM_ANTS = 250                 # range: [1, inf)
     EXP_PH = 1                     # range: (-inf, inf)
@@ -109,7 +110,7 @@ class AntColonyAlgorithm(algo.Algorithm):
                     best_solution = nodes
                     best_solved = solved_clauses
 
-                if solved_clauses == len(self.clauses):
+                if solved_clauses == self.num_clauses:
                     print "DONE: ", nodes
                     exit()
 

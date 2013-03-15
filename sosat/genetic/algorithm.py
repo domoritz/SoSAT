@@ -5,26 +5,29 @@ import sosat.algorithm as algo
 
 class GeneticAlgorithm(algo.Algorithm):
     NUM_CHROMOSOMES = 100
-    ELIRATE = 0.1
-    SELRATE = 0.2
+    ELIRATE = 0.2
+    SELRATE = 0.3
     NUM_ELITES = NUM_CHROMOSOMES * ELIRATE
     # actual selection is twice the size so that we always get pairs
     NUM_SELECTED = NUM_CHROMOSOMES * SELRATE
+    MUTATION_RATE = 0.4
 
     def __init__(self, num_vars=0, clauses=[], config={}):
         super(GeneticAlgorithm, self).__init__(num_vars, clauses, config)
 
-        self.fitnesses = np.zeros(shape=(self.NUM_CHROMOSOMES, 1), dtype=np.int)
+        self.fitnesses = np.zeros(self.NUM_CHROMOSOMES, dtype=np.int)
         self.generate_initial_population()
 
     def generate_initial_population(self):
         shape = (self.NUM_CHROMOSOMES, self.num_vars)
         self.pop = np.random.choice([True, False], shape)
 
-    def mutate_chromosomes(self, chromosomes):
-        where_to_toggle = np.random.randint(0, self.num_vars, size=len(chromosomes))
+    def mutate_offspring(self, chromosomes):
+        upper_bound = self.num_vars / self.MUTATION_RATE
+        where_to_toggle = np.random.randint(0, upper_bound, size=len(chromosomes))
         for i, x in enumerate(where_to_toggle):
-            chromosomes[i][x] = not chromosomes[i][x]
+            if x < self.num_vars:
+                chromosomes[i][x] = not chromosomes[i][x]
 
     def crossover(self, c1, c2):
         cop = np.random.randint(0, self.num_vars)
@@ -33,19 +36,16 @@ class GeneticAlgorithm(algo.Algorithm):
     def calculate_fitness(self, chromosome):
         return sum(self.evaluate_candidate(chromosome))
 
-    def evaluate_fitnesses(self, popuation):
-        fitnesses = np.zeros(shape=(len(popuation), 1))
+    def evaluate_fitnesses(self, popuation, fitnesses):
         for i, chromosome in enumerate(popuation):
             fitnesses[i] = self.calculate_fitness(chromosome)
-        return fitnesses
 
     def evaluate_fitness_of_population(self):
-        for i, chromosome in enumerate(self.pop):
-            self.fitnesses[i] = self.calculate_fitness(chromosome)
+        self.evaluate_fitnesses(self.pop, self.fitnesses)
 
     def get_non_elites(self):
         # get indexes of chromosomes that are not elites
-        indexes = bn.argpartsort(-self.fitnesses.flatten(), n=self.NUM_ELITES)
+        indexes = bn.argpartsort(-self.fitnesses, n=self.NUM_ELITES)
         num_no_elites = self.NUM_CHROMOSOMES - self.NUM_ELITES
         no_elites = indexes[-num_no_elites:]
         np.random.shuffle(no_elites)
@@ -55,18 +55,34 @@ class GeneticAlgorithm(algo.Algorithm):
         # selects random parents
         return np.random.randint(0, self.NUM_CHROMOSOMES, size=2 * self.NUM_SELECTED)
 
+    def show(self):
+        print "Population:"
+        for i, chromosome in enumerate(self.pop):
+            print i, chromosome, self.fitnesses[i]
+        print max(self.fitnesses), 'of', self.num_clauses
+
     def run(self):
         assert(self.NUM_CHROMOSOMES - self.NUM_ELITES > self.NUM_SELECTED)
         self.evaluate_fitness_of_population()
 
-        offspring = np.zeros(shape=(self.NUM_SELECTED, self.num_vars), dtype=np.bool)
+        offspring = np.zeros((self.NUM_SELECTED, self.num_vars), dtype=np.bool)
+        offspring_fitnesses = np.zeros(self.NUM_SELECTED, dtype=np.int)
         while True:
             selection = self.get_selection().reshape(self.NUM_SELECTED, 2)
-
             for i, pair in enumerate(selection):
                 offspring[i] = self.crossover(self.pop[pair[0]], self.pop[pair[1]])
-            offspring_fitnesses = self.evaluate_fitnesses(offspring)
+            self.mutate_offspring(offspring)
+            self.evaluate_fitnesses(offspring, offspring_fitnesses)
             no_elites = self.get_non_elites()
             self.pop[no_elites] = offspring
             self.fitnesses[no_elites] = offspring_fitnesses
-            break
+
+            if self.num_clauses in self.fitnesses:
+                break
+
+            print max(self.fitnesses), 'of', self.num_clauses
+
+        index_of_best = list(self.fitnesses).index(self.num_clauses)
+        best = self.pop[index_of_best]
+        print best
+        self.return_solution(best)

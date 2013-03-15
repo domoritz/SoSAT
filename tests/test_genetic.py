@@ -20,7 +20,7 @@ class TestSequenceFunctions(unittest.TestCase):
         arr = arr.reshape(3, 1)
         copy = arr.copy()
         a = ga.GeneticAlgorithm(1)
-        a.mutate_chromosomes(arr)
+        a.mutate_offspring(arr)
 
         vecfunc = np.vectorize(lambda x: not x)
         expected = vecfunc(copy)

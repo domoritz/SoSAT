@@ -1,4 +1,6 @@
+import sys
 import numpy as np
+
 
 class Algorithm(object):
     SEED = 42
@@ -7,6 +9,7 @@ class Algorithm(object):
         self.num_vars = num_vars
         self.num_lits = 2 * num_vars
         self.raw_clauses = clauses
+        self.num_clauses = len(clauses)
 
         self.__dict__.update(config)
 
@@ -34,3 +37,6 @@ class Algorithm(object):
 
     def evaluate_candidate(self, candidate):
         return self.evaluate_full_candidate(self.full_candidate(candidate))
+
+    def return_solution(self, best):
+        sys.stdout.write(best)
