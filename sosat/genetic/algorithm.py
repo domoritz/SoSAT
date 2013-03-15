@@ -66,7 +66,7 @@ class GeneticAlgorithm(algo.Algorithm):
 
         offspring = np.zeros((self.NUM_SELECTED, self.num_vars), dtype=np.bool)
         offspring_fitnesses = np.zeros(self.NUM_SELECTED, dtype=np.int)
-        while True:
+        for iteration in xrange(self.MAX_ITERATIONS):
             selection = self.get_selection().reshape(self.NUM_SELECTED, 2)
             for i, pair in enumerate(selection):
                 offspring[i] = self.crossover(self.pop[pair[0]], self.pop[pair[1]])

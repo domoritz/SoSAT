@@ -7,7 +7,6 @@ class AntColonyAlgorithm(algo.Algorithm):
     EXP_PH = 1                     # range: (-inf, inf)
     EXP_MCV = 1                    # range: (-inf, inf)
     PH_REDUCE_FACTOR = 0.15     # range: (0, 1)
-    MAX_ITERATIONS = 10000
     BLUR_ITERATIONS = 3
     BLUR_BASIC = 0.9
     BLUR_DECLINE = 50.0
@@ -96,12 +95,12 @@ class AntColonyAlgorithm(algo.Algorithm):
         #print "BLUR: ", max_divergence, self.pheromones
 
     def run(self):
-        for i in range(self.MAX_ITERATIONS):
+        for i in xrange(self.MAX_ITERATIONS):
             best_solution = None
             best_evaluation = -1
             best_solved = 0
 
-            for a in range(self.NUM_ANTS):
+            for a in xrange(self.NUM_ANTS):
                 nodes = self.choose_nodes()
                 evaluation, solved_clauses = self.evaluate_solution(nodes)
 

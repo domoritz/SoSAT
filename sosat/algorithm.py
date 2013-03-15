@@ -5,6 +5,7 @@ import numpy as np
 class Algorithm(object):
     SEED = 42
     VERBOSE = False
+    MAX_ITERATIONS = 10000
 
     def __init__(self, num_vars=0, clauses=[], config={}):
         self.num_vars = num_vars
