@@ -29,7 +29,7 @@ if __name__ == '__main__':
         a = ga.GeneticAlgorithm(num_vars, clauses)
     elif args.algo == 'ant':
         print "starting ant"
-        a = aa.AntColonyAlgorithm(num_vars, clauses)
+        a = aa.run_ant(num_vars, clauses)
     else:
         print "No such algorithm."
 

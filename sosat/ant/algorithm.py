@@ -1,150 +1,141 @@
-print "11"
 import numba as nb
 import numpy as np
-import sosat.algorithm as algo
-print "aaa"
 
-NUMBA___init__ = nb.void(nb.int_, nb.int_[:], nb.object_)
-NUMBA_void = nb.void()
-NUMBA_choose_nodes = nb.bool_[:]()
-NUMBA_evaluate_solution = nb.double[:](nb.bool_[:])
-NUMBA_update_pheromones = nb.void(nb.bool_[:], nb.double)
-NUMBA_blur_pheromones = nb.void(nb.double)
+NUM_ANTS = 25000                 # range: [1, inf)
+EXP_PH = 1                     # range: (-inf, inf)
+EXP_MCV = 1                    # range: (-inf, inf)
+PH_REDUCE_FACTOR = 0.15     # range: (0, 1)
+MAX_ITERATIONS = 10000
+BLUR_ITERATIONS = 3
+BLUR_BASIC = 0.9
+BLUR_DECLINE = 50.0
+WEIGHT_ADAPTION_DURATION = 250
+SEED = 42
 
-class AntColonyAlgorithm(algo.Algorithm):
-    NUM_ANTS = 250                 # range: [1, inf)
-    EXP_PH = 1                     # range: (-inf, inf)
-    EXP_MCV = 1                    # range: (-inf, inf)
-    PH_REDUCE_FACTOR = 0.15     # range: (0, 1)
-    MAX_ITERATIONS = 10000
-    BLUR_ITERATIONS = 3
-    BLUR_BASIC = 0.9
-    BLUR_DECLINE = 50.0
-    WEIGHT_ADAPTION_DURATION = 250
+def initialize_clauses(num_vars, raw_clauses):
+    num_clauses = len(raw_clauses)
+    shape = (num_clauses, 2, num_vars)
+    clauses = np.zeros(dtype=np.bool, shape=shape)
+    for i, clause in enumerate(raw_clauses):
+        for lit in clause:
+            if lit > 0: 
+                clauses[i][0][lit - 1] = True
+            else:
+                clauses[i][1][-lit - 1] = True
+
+    return clauses
+
+def update_probabilities(mcv, pheromones):
+    return pheromones**EXP_PH * mcv**EXP_MCV
+
+def debug_me(num):
+    print "DEBUG: ", num
+    
+def choose_nodes(num_vars, pheromones):
+    normalization_vector = np.sum(pheromones, axis=0) ** -1
+    chosen = np.random.rand(num_vars) < normalization_vector * pheromones[0]
+    return chosen
+
+@nb.jit(nb.bool_[:,:](nb.bool_[:]))
+def full_candidate(candidate):
+    return np.array([candidate, ~candidate])
+
+@nb.autojit
+def update_pheromones(chosen, evaluation, pheromones, PH_MIN, PH_MAX):
+    pheromones = pheromones * (1.0 - PH_REDUCE_FACTOR) + full_candidate(chosen) * evaluation
+    pheromones = update_pheromones_bounds(pheromones, PH_MIN, PH_MAX)
+    return pheromones
+
+def update_pheromones_bounds(pheromones, PH_MIN, PH_MAX):
+    pheromones[pheromones < PH_MIN] = PH_MIN
+    pheromones[pheromones > PH_MAX] = PH_MAX
+    return pheromones
+
+def print_me(obj):
+    print obj
+
+@nb.jit(nb.int_(nb.int_, nb.int_[:,:]), 
+    locals = dict(
+        evaluation = nb.double, 
+        best_evaluation = nb.double, 
+        num_vars = nb.int_,
+        num_lits = nb.int_,
+        candidate_counter = nb.int_,
+        clauses = nb.bool_[:,:,:],
+        int_clauses = nb.int_[:,:,:],
+        PH_MIN = nb.double,
+        PH_MAX = nb.double,
+        clause_weights = nb.double[:],
+        mcv = nb.int_[:],
+        pheromones = nb.double[:,:],
+        best_solution = nb.bool_[:,:],
+        solved_clauses = nb.double[:,:],
+        num_solved_clauses = nb.int_,
+        best_solved = nb.int_,
+        nodes = nb.bool_[:,:],
+        probabilites = nb.double[:,:],
+        max_divergence = nb.double
+        ))
+def run(p_num_vars=0, raw_clauses=[]):
+    num_vars = p_num_vars
+    num_lits = 2 * num_vars
+    candidate_counter = 0
+    clauses = initialize_clauses(num_vars, raw_clauses)
+    int_clauses = clauses.astype(int)
+    PH_MAX = num_vars / (1.0 - PH_REDUCE_FACTOR) 
+    PH_MIN = PH_MAX / num_lits
+    clause_weights = np.ones(len(clauses))
+    mcv = np.sum(int_clauses, axis=0)
+    pheromones = np.ndarray((2, num_vars), float)
+    pheromones.fill(PH_MAX)
+    #print_me(pheromones)
+    
+    probabilities = update_probabilities(mcv, pheromones)
+     
+    for i in range(MAX_ITERATIONS):
+        best_solution = np.array([[True]])   # should be None
+        best_evaluation = -1.0
+        best_solved = 0.0
+        evaluation = 0.0
+        print NUM_ANTS
+    
+        for a in range(NUM_ANTS):
+            nodes = choose_nodes(num_vars, probabilities)
  
-    def __init__(self, num_vars=0, clauses=[], config={}):
-        print "!!!!"
-        # clause form: [-x1, x1, -x2, x2, -x3, x3, ...] (0/1)
-        super(AntColonyAlgorithm, self).__init__(num_vars, clauses, config)
-        print self.raw_clauses
+            candidate_counter += 1
+            solved_clauses = np.any(clauses & np.array([nodes, ~nodes]), axis=(2, 1))
+            num_solved_clauses = np.sum(solved_clauses)
+            evaluation = np.sum(solved_clauses * clause_weights)
 
-        self.initialize_constants()
-        self.initialize_variables()
-        self.initialize_clause_weights()
-        self.initialize_pheromones()
-        self.initialize_mcv_heuristic()
-        self.initialize_probabilities()
+            if candidate_counter == WEIGHT_ADAPTION_DURATION:
+                clause_weights += ~solved_clauses 
+                candidate_counter = 0
+
+            if evaluation > best_evaluation:
+                best_evaluation = evaluation
+                best_solution = nodes
+                best_solved = num_solved_clauses
+
+            if float(num_solved_clauses) == float(len(clauses)):
+                pass
+                print "DONE: " #, nodes
+                return 0
+        
+#        print "Solution: ", best_solution, best_evaluation, best_solved, "/", len(clauses)
+        pheromones = update_pheromones(best_solution, evaluation, pheromones, PH_MIN, PH_MAX)
+#        print_me(best_solved)
+        #print_me(pheromones)
+        probabilities = update_probabilities(mcv, pheromones)
+        #print_me(probabilities)
+          
+        if i > 0 and i % BLUR_ITERATIONS == 0:
+            max_divergence = BLUR_BASIC * np.e**(-i/BLUR_DECLINE)
+            pheromones += pheromones * (np.random.rand(2, num_vars) * max_divergence * 2 - max_divergence)
+            pheromones = update_pheromones_bounds(pheromones, PH_MIN, PH_MAX)
+            probabilities = update_probabilities(mcv, pheromones)
     
-    def initialize_clauses(self):
-        super(AntColonyAlgorithm, self).initialize_clauses()
-        self.int_clauses = self.clauses.astype(int)
+    return 1
 
-    @NUMBA_void
-    def initialize_variables(self):
-        self.candidate_counter = 0
-
-    def initialize_constants(self):
-        self.PH_MAX = self.num_vars / (1.0 - self.PH_REDUCE_FACTOR)
-        self.PH_MIN = self.PH_MAX / self.num_lits
-        print "PH_MIN: ", self.PH_MIN, ", PH_MAX: ", self.PH_MAX
-
-    @NUMBA_void
-    def initialize_clause_weights(self):
-        self.clause_weights = np.ones(len(self.clauses))
-
-    @NUMBA_void
-    def initialize_mcv_heuristic(self):
-        '''
-        Most Constrained Variable (MCV) heuristic: variables that appear in most
-        clauses are more important and visited more often.
-        '''
-        self.mcv = np.sum(self.int_clauses, axis=0)
-        print "init mcv: ", self.mcv
-
-    @NUMBA_void
-    def initialize_pheromones(self):
-        '''
-        All pheromone values are initialized to PH_MAX.
-        '''
-        self.pheromones = np.ndarray((2, self.num_vars), float)
-        self.pheromones.fill(self.PH_MAX)
-
-    @NUMBA_void
-    def initialize_probabilities(self):
-        self.probabilities = np.ndarray((2, self.num_vars), float)
-        self.update_probabilities()
-
-    @NUMBA_void
-    def update_probabilities(self):
-        self.probabilities = self.pheromones**self.EXP_PH * self.mcv**self.EXP_MCV
-
-    @NUMBA_choose_nodes
-    def choose_nodes(self):
-        normalization_vector = np.sum(self.pheromones, axis=0) ** -1
-        chosen = np.random.rand(self.num_vars) < normalization_vector * self.pheromones[0]
-        return chosen
-
-    @NUMBA_evaluate_solution
-    def evaluate_solution(self, chosen):
-        self.candidate_counter += 1
-
-        solved_clauses = self.evaluate_candidate(chosen)
-        num_solved_clauses = np.sum(solved_clauses)
-        evaluation = np.sum(solved_clauses * self.clause_weights)
-
-        if self.candidate_counter == self.WEIGHT_ADAPTION_DURATION:
-            self.clause_weights += ~solved_clauses
-            self.candidate_counter = 0
-
-        #print "evaluation: ", chosen_nodes, evaluation, solved_clauses
-        return evaluation, num_solved_clauses
-
-    @NUMBA_update_pheromones
-    def update_pheromones(self, chosen, evaluation):
-        self.pheromones = self.pheromones * (1.0 - self.PH_REDUCE_FACTOR) + self.full_candidate(chosen) * evaluation
-        self.update_pheromones_bounds()
-    
-    @NUMBA_void
-    def update_pheromones_bounds(self):
-        self.pheromones[self.pheromones < self.PH_MIN] = self.PH_MIN
-        self.pheromones[self.pheromones > self.PH_MAX] = self.PH_MAX
-
-    @NUMBA_blur_pheromones
-    def blur_pheromones(self, max_divergence):
-        self.pheromones += self.pheromones * (np.random.rand(2, self.num_vars) * max_divergence * 2 - max_divergence)
-        self.update_pheromones_bounds()
-        self.update_probabilities()
-        #print "BLUR: ", max_divergence, self.pheromones
-
-    @NUMBA_void
-    def run(self):
-        for i in range(self.MAX_ITERATIONS):
-            best_solution = None
-            best_evaluation = -1
-            best_solved = 0
-
-            for a in range(self.NUM_ANTS):
-                nodes = self.choose_nodes()
-                evaluation, solved_clauses = self.evaluate_solution(nodes)
-
-                if evaluation > best_evaluation:
-                    best_evaluation = evaluation
-                    best_solution = nodes
-                    best_solved = solved_clauses
-
-                if solved_clauses == len(self.clauses):
-                    print "DONE: ", nodes
-                    exit()
-
-            #print "Solution: ", best_solution, best_evaluation, best_solved, "/", len(self.clauses)
-
-            self.update_pheromones(best_solution, evaluation)
-            #print "Pheromones: ", self.pheromones
-            self.update_probabilities()
-            #print "Probablilities: ", self.probabilities
-
-            if i > 0 and i % self.BLUR_ITERATIONS == 0:
-                self.blur_pheromones(self.BLUR_BASIC * np.e**(-i/self.BLUR_DECLINE))
-
-print "fff"
-
+def run_ant(p_num_vars=0, raw_clauses=[]):
+    np.random.seed(SEED)
+    run(p_num_vars, raw_clauses)
