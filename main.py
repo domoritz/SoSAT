@@ -1,11 +1,10 @@
 import argparse
 import sys
 
-#import algorithm as algo
-import genetic.algorithm as ga
-import ant.algorithm as aa
-import parser
-print __name__
+import sosat.algorithm as algo
+import sosat.genetic.algorithm as ga
+import sosat.ant.algorithm as aa
+import sosat.parser as parser
 
 if __name__ == '__main__':
     clp = argparse.ArgumentParser(description='SAT solver.')

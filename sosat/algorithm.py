@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class Algorithm(object):
     SEED = 42
 
@@ -34,4 +33,4 @@ class Algorithm(object):
         return np.any(self.clauses & full_candidate, axis=(2, 1))
 
     def evaluate_candidate(self, candidate):
-        return self.evaluate_full_candidate(self, self.full_candidate(candidate))
+        return self.evaluate_full_candidate(self.full_candidate(candidate))
