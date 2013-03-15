@@ -6,6 +6,7 @@ class Algorithm(object):
 
     def __init__(self, num_vars=0, clauses=[]):
         self.num_vars = num_vars
+        self.num_lits = 2 * num_vars
         self.raw_clauses = clauses
 
         np.random.seed(self.SEED)
@@ -24,6 +25,11 @@ class Algorithm(object):
                     clauses[i][1][-lit - 1] = True
         self.clauses = clauses
 
+    def full_candidate(self, candidate):
+        return np.array([candidate, ~candidate])
+
+    def evaluate_full_candidate(self, full_candidate):
+        return np.any(self.clauses & full_candidate, axis=(2, 1))
+
     def evaluate_candidate(self, candidate):
-        full_candiate = np.array([candidate, ~candidate])
-        return np.any(self.clauses & full_candiate, axis=(2, 1))
+        return self.evaluate_full_candidate(self, self.full_candidate(candidate))
