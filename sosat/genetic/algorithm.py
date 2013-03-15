@@ -85,4 +85,4 @@ class GeneticAlgorithm(algo.Algorithm):
 
         index_of_best = list(self.fitnesses).index(self.num_clauses)
         best = self.pop[index_of_best]
-        self.return_solution(best)
+        return best

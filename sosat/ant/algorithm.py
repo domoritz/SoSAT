@@ -111,7 +111,7 @@ class AntColonyAlgorithm(algo.Algorithm):
                     best_solved = solved_clauses
 
                 if solved_clauses == self.num_clauses:
-                    self.return_solution(nodes)
+                    return nodes
 
             #print "Solution: ", best_solution, best_evaluation, best_solved, "/", len(self.clauses)
 
