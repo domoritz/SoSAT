@@ -15,9 +15,9 @@ class AntColonyAlgorithm(algo.Algorithm):
     BLUR_DECLINE = 50.0
     WEIGHT_ADAPTION_DURATION = 250
 
-    def __init__(self, num_vars=0, clauses=[]):
+    def __init__(self, num_vars=0, clauses=[], config={}):
         # clause form: [-x1, x1, -x2, x2, -x3, x3, ...] (0/1)
-        super(AntColonyAlgorithm, self).__init__(num_vars, clauses)
+        super(AntColonyAlgorithm, self).__init__(num_vars, clauses, config)
 
         self.initialize_constants()
         self.initialize_variables()

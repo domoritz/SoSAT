@@ -7,27 +7,33 @@ class GeneticAlgorithm(algo.Algorithm):
     ELIRATE = 0.1
     NUM_ELITES = NUM_CHROMOSOMES * ELIRATE
 
-    def __init__(self, num_vars=0, clauses=[]):
-        super(GeneticAlgorithm, self).__init__(num_vars, clauses)
+    def __init__(self, num_vars=0, clauses=[], config={}):
+        super(GeneticAlgorithm, self).__init__(num_vars, clauses, config)
 
+        self.fitnesses = np.zeros(shape=(self.NUM_CHROMOSOMES, 1), dtype=np.int)
         self.generate_initial_population()
 
     def generate_initial_population(self):
-        size = self.num_vars * self.NUM_CHROMOSOMES
-        print self.num_vars
-        # generate list from random choice
-        self.pop = np.random.choice([True, False], size)
-        # make an array from the list
-        self.pop = self.pop.reshape(self.num_vars, self.NUM_CHROMOSOMES)
+        shape = (self.NUM_CHROMOSOMES, self.num_vars)
+        self.pop = np.random.choice([True, False], shape)
 
-    def mutate_chromosomes(self, array):
-        where_to_toggle = np.random.randint(0, self.num_vars, size=len(array))
+    def mutate_chromosomes(self, chromosomes):
+        where_to_toggle = np.random.randint(0, self.num_vars, size=len(chromosomes))
         for i, x in enumerate(where_to_toggle):
-            array[i][x] = not array[i][x]
+            chromosomes[i][x] = not chromosomes[i][x]
 
-    def calculate_fitness(self):
-        pass
+    def crossover(self, c1, c2):
+        cop = np.random.randint(0, self.num_vars)
+        return c1[cop:] + c2[:cop]
+
+    def calculate_fitness(self, chromosome):
+        return sum(self.evaluate_candidate(chromosome))
+
+    def evaluate_fitness_of_population(self):
+        for i, chromosome in enumerate(self.pop):
+            self.fitnesses[i] = self.calculate_fitness(chromosome)
 
     def run(self):
+        self.evaluate_fitness_of_population()
         while True:
             break
