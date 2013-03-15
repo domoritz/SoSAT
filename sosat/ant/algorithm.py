@@ -1,7 +1,8 @@
 import numpy as np
+import sosat.algorithm as algo
 
 
-class AntColonyAlgorithm(object):
+class AntColonyAlgorithm(algo.Algorithm):
     SEED = 42
     NUM_ANTS = 150                 # range: [1, inf)
     EXP_PH = 1                     # range: (-inf, inf)
@@ -16,10 +17,8 @@ class AntColonyAlgorithm(object):
 
     def __init__(self, num_vars=0, clauses=[]):
         # clause form: [-x1, x1, -x2, x2, -x3, x3, ...] (0/1)
-        self.num_vars = num_vars
-        print "num_vars: ", num_vars
+        super(AntColonyAlgorithm, self).__init__(num_vars, clauses)
 
-        self.initialize_instance(clauses)
         self.initialize_constants()
         self.initialize_variables()
         self.initialize_clause_weights()
@@ -35,19 +34,6 @@ class AntColonyAlgorithm(object):
         self.PH_MAX = self.num_vars / (1.0-self.PH_REDUCE_FACTOR)
         self.PH_MIN = self.PH_MAX / (2*self.num_vars)
         print "PH_MIN: ", self.PH_MIN, ", PH_MAX: ", self.PH_MAX
-
-    def initialize_instance(self, clauses):
-        self.clauses = []
-
-        for c in clauses:
-            clause = np.ndarray((2*self.num_vars), int)
-            clause.fill(0)
-
-            for literal in c:
-                clause[(abs(literal)-1)*2 + min(1, np.sign(literal)+1)] = 1
-
-            print "clause: ", clause
-            self.clauses += [clause]
 
     def initialize_clause_weights(self):
         self.clause_weights = np.ndarray((len(self.clauses)), float)

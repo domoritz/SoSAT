@@ -13,8 +13,6 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_initialization(self):
         a = ga.Algorithm(self.num_vars, self.clauses)
-        assert_equal(a.num_vars, self.num_vars)
-        assert_equal(a.clauses, self.clauses)
         assert_equal(a.pop.shape, (20, a.NUM_CHROMOSOMES))
 
     def test_mutate(self):
@@ -27,20 +25,6 @@ class TestSequenceFunctions(unittest.TestCase):
         vecfunc = np.vectorize(lambda x: not x)
         expected = vecfunc(copy)
         assert_equal(list(arr), list(expected))
-
-    def test_clause_masks(self):
-        a = ga.Algorithm(self.num_vars, self.clauses)
-        a.generate_clause_masks()
-        dm = list(a.defined_masks[1])
-        assert_equal(dm, [False, False, False, False, False,
-                          True, False, False, False, False,
-                          True, False, True, True, False,
-                          False, False, False, False, True])
-        tm = list(a.true_masks[1])
-        assert_equal(tm, [False, False, False, False, False,
-                          True, False, False, False, False,
-                          False, False, True, True, False,
-                          False, False, False, False, True])
 
 if __name__ == '__main__':
     unittest.main()
