@@ -10,7 +10,7 @@ class GeneticAlgorithm(algo.Algorithm):
     NUM_ELITES = NUM_CHROMOSOMES * ELIRATE
     # actual selection is twice the size so that we always get pairs
     NUM_SELECTED = NUM_CHROMOSOMES * SELRATE
-    MUTATION_RATE = 0.4
+    MUTATION_RATE = 0.3
 
     def __init__(self, num_vars=0, clauses=[], config={}):
         super(GeneticAlgorithm, self).__init__(num_vars, clauses, config)
@@ -23,11 +23,10 @@ class GeneticAlgorithm(algo.Algorithm):
         self.pop = np.random.choice([True, False], shape)
 
     def mutate_offspring(self, chromosomes):
-        upper_bound = self.num_vars / self.MUTATION_RATE
-        where_to_toggle = np.random.randint(0, upper_bound, size=len(chromosomes))
-        for i, x in enumerate(where_to_toggle):
-            if x < self.num_vars:
-                chromosomes[i][x] = not chromosomes[i][x]
+        size = len(chromosomes)
+        where_to_toggle = np.random.randint(1, self.num_vars - 1, size=size)
+        for i, x in enumerate(where_to_toggle[self.MUTATION_RATE * size:]):
+            chromosomes[i][x] = not chromosomes[i][x]
 
     def crossover(self, c1, c2):
         cop = np.random.randint(0, self.num_vars)

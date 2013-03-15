@@ -31,7 +31,7 @@ if __name__ == '__main__':
                      default=42,
                      help='seed for random number generator')
     clp.add_argument('-N', '--number', dest='N',
-                     default=None, type=int,
+                     default=1, type=int,
                      help='number of processes')
     clp.add_argument('infile', nargs='?', type=argparse.FileType('r'),
                      default=sys.stdin)
