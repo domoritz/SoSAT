@@ -16,7 +16,7 @@ class AntColonyAlgorithm(algo.Algorithm):
     def __init__(self, num_vars=0, clauses=[], config={}):
         # clause form: [-x1, x1, -x2, x2, -x3, x3, ...] (0/1)
         super(AntColonyAlgorithm, self).__init__(num_vars, clauses, config)
-        print self.raw_clauses
+        #print self.raw_clauses
 
         self.initialize_constants()
         self.initialize_variables()
@@ -35,7 +35,7 @@ class AntColonyAlgorithm(algo.Algorithm):
     def initialize_constants(self):
         self.PH_MAX = self.num_vars / (1.0 - self.PH_REDUCE_FACTOR)
         self.PH_MIN = self.PH_MAX / self.num_lits
-        print "PH_MIN: ", self.PH_MIN, ", PH_MAX: ", self.PH_MAX
+        #print "PH_MIN: ", self.PH_MIN, ", PH_MAX: ", self.PH_MAX
 
     def initialize_clause_weights(self):
         self.clause_weights = np.ones(len(self.clauses))
@@ -46,7 +46,7 @@ class AntColonyAlgorithm(algo.Algorithm):
         clauses are more important and visited more often.
         '''
         self.mcv = np.sum(self.int_clauses, axis=0)
-        print "init mcv: ", self.mcv
+        #print "init mcv: ", self.mcv
 
     def initialize_pheromones(self):
         '''
@@ -111,8 +111,7 @@ class AntColonyAlgorithm(algo.Algorithm):
                     best_solved = solved_clauses
 
                 if solved_clauses == self.num_clauses:
-                    print "DONE: ", nodes
-                    exit()
+                    self.return_solution(nodes)
 
             #print "Solution: ", best_solution, best_evaluation, best_solved, "/", len(self.clauses)
 

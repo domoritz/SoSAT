@@ -80,9 +80,9 @@ class GeneticAlgorithm(algo.Algorithm):
             if self.num_clauses in self.fitnesses:
                 break
 
-            print max(self.fitnesses), 'of', self.num_clauses
+            if self.VERBOSE:
+                print max(self.fitnesses), 'of', self.num_clauses
 
         index_of_best = list(self.fitnesses).index(self.num_clauses)
         best = self.pop[index_of_best]
-        print best
         self.return_solution(best)

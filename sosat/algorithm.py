@@ -4,6 +4,7 @@ import numpy as np
 
 class Algorithm(object):
     SEED = 42
+    VERBOSE = False
 
     def __init__(self, num_vars=0, clauses=[], config={}):
         self.num_vars = num_vars
@@ -39,4 +40,9 @@ class Algorithm(object):
         return self.evaluate_full_candidate(self.full_candidate(candidate))
 
     def return_solution(self, best):
-        sys.stdout.write(best)
+        solution = []
+        for i, lit in enumerate(best):
+            solution.append(str(i if lit else -i))
+        sys.stdout.write("v " + ' '.join(solution) + '\n')
+        sys.stdout.write("s SATISFIABLE\n")
+        exit()
