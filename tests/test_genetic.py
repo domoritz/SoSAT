@@ -15,17 +15,6 @@ class TestSequenceFunctions(unittest.TestCase):
         a = ga.GeneticAlgorithm(self.num_vars, self.clauses)
         assert_equal(a.pop.shape, (a.NUM_CHROMOSOMES, self.num_vars))
 
-    def test_mutate(self):
-        arr = np.array([True, False, True], dtype=np.bool)
-        arr = arr.reshape(3, 1)
-        copy = arr.copy()
-        a = ga.GeneticAlgorithm(1)
-        a.mutate_offspring(arr)
-
-        vecfunc = np.vectorize(lambda x: not x)
-        expected = vecfunc(copy)
-        assert_equal(list(arr), list(expected))
-
     def test_evaluate(self):
         a = ga.GeneticAlgorithm(4, [[-1, 2, -4], [1, 2]])
         r = a.calculate_fitness(np.array([True, True, False, False]))

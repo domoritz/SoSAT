@@ -1,9 +1,9 @@
 import argparse
 import sys
-import os
 import multiprocessing
 from multiprocessing import Process, Event, Queue
 
+#import numpypy  for pypy
 import sosat.genetic.algorithm as ga
 import sosat.ant.algorithm as aa
 import sosat.parser as parser
