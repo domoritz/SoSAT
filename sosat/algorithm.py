@@ -16,7 +16,6 @@ class Algorithm(object):
         num_clauses = len(self.raw_clauses)
         shape = (num_clauses, 2, self.num_vars)
         clauses = np.zeros(dtype=np.bool, shape=shape)
-        print clauses
         for i, clause in enumerate(self.raw_clauses):
             for lit in clause:
                 if lit > 0:
@@ -24,3 +23,7 @@ class Algorithm(object):
                 else:
                     clauses[i][1][-lit - 1] = True
         self.clauses = clauses
+
+    def evaluate_candidate(self, candidate):
+        full_candiate = np.array([candidate, ~candidate])
+        return np.any(self.clauses & full_candiate, axis=(2, 1))

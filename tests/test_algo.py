@@ -21,3 +21,14 @@ class TestSequenceFunctions(unittest.TestCase):
         exp = [[False, True, False, False], [True, False, False, True]]
         assert_equal(list(a.clauses[0][0]), exp[0])
         assert_equal(list(a.clauses[0][1]), exp[1])
+
+    def test_evaluate_candidate(self):
+        a = algo.Algorithm(4, [[-1, 2, -4], [1, 2]])
+        r = a.evaluate_candidate(np.array([True, True, False, False]))
+        assert_equal(list(r), [True, True])
+
+        r = a.evaluate_candidate(np.array([False, False, True, False]))
+        assert_equal(list(r), [True, False])
+
+        r = a.evaluate_candidate(np.array([True, False, True, True]))
+        assert_equal(list(r), [False, True])
