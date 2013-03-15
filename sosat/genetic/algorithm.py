@@ -6,12 +6,13 @@ import sosat.algorithm as algo
 class GeneticAlgorithm(algo.Algorithm):
     NUM_CHROMOSOMES = 100
     ELIRATE = 0.2
-    SELRATE = 0.2
+    SELRATE = 0.20
     NUM_ELITES = NUM_CHROMOSOMES * ELIRATE
     # actual selection is twice the size so that we always get pairs
     NUM_SELECTED = NUM_CHROMOSOMES * SELRATE
     MUTATION_RATE = 0.4
     NUM_FOR_FORCE = 1
+    DYNAMIC = False
 
     def __init__(self, num_vars=0, clauses=[], config={}):
         super(GeneticAlgorithm, self).__init__(num_vars, clauses, config)
@@ -42,7 +43,7 @@ class GeneticAlgorithm(algo.Algorithm):
 
     def get_elites(self, limit=None):
         limit = limit or self.NUM_ELITES
-        indexes = bn.argpartsort(-self.fitnesses, n=self.NUM_ELITES)
+        indexes = bn.argpartsort(-self.fitnesses, n=limit)
         return indexes[:limit]
 
     def get_non_elites(self, limit):
@@ -78,13 +79,23 @@ class GeneticAlgorithm(algo.Algorithm):
             self.pop[no_elites[i]] = elite_chromosome
             self.fitnesses[no_elites[i]] = sum(self.evaluate_candidate(elite_chromosome))
 
+    def adjust_parameters(self):
+        pass
+        #prog = self.progress / self.num_clauses
+
     def run(self):
         assert(self.NUM_CHROMOSOMES - self.NUM_ELITES > self.NUM_SELECTED)
+        assert(2 * self.NUM_SELECTED < self.NUM_CHROMOSOMES)
         self.evaluate_fitness_of_population()
+
+        self.progress = 0
 
         offspring = np.zeros((self.NUM_SELECTED, self.num_vars), dtype=np.bool)
         offspring_fitnesses = np.zeros(self.NUM_SELECTED, dtype=np.int)
         for iteration in xrange(self.MAX_ITERATIONS):
+            if self.DYNAMIC:
+                self.adjust_parameters()
+
             selection = self.get_selection().reshape(self.NUM_SELECTED, 2)
             for i, pair in enumerate(selection):
                 offspring[i] = self.crossover(self.pop[pair[0]], self.pop[pair[1]])
@@ -96,6 +107,8 @@ class GeneticAlgorithm(algo.Algorithm):
 
             if self.num_clauses in self.fitnesses:
                 break
+
+            self.progress = np.amax(self.fitnesses)
 
             self.force_missing(no_elites)
 
