@@ -12,4 +12,3 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_initialization(self):
         a = aa.AntColonyAlgorithm(self.num_vars, self.clauses)
-        assert_equal(a.solution_counter, 0)
