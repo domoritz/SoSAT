@@ -19,11 +19,14 @@ class MyProcess(Process):
 
 
 def print_solution(solution):
+    if solution is not None:
         sol = []
         for i, lit in enumerate(solution):
             sol.append(str(i if lit else -i))
         sys.stdout.write("v " + ' '.join(sol) + '\n')
         sys.stdout.write("s SATISFIABLE\n")
+    else:
+        sys.stdout.write("s UNSATISFIABLE\n")
 
 
 if __name__ == '__main__':

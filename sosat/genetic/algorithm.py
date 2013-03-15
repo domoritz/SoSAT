@@ -6,7 +6,7 @@ import sosat.algorithm as algo
 class GeneticAlgorithm(algo.Algorithm):
     NUM_CHROMOSOMES = 100
     ELIRATE = 0.2
-    SELRATE = 0.20
+    SELRATE = 0.2
     NUM_ELITES = NUM_CHROMOSOMES * ELIRATE
     # actual selection is twice the size so that we always get pairs
     NUM_SELECTED = NUM_CHROMOSOMES * SELRATE
@@ -106,7 +106,9 @@ class GeneticAlgorithm(algo.Algorithm):
             self.fitnesses[no_elites] = offspring_fitnesses
 
             if self.num_clauses in self.fitnesses:
-                break
+                index_of_best = np.where(self.fitnesses == self.num_clauses)[0][0]
+                best = self.pop[index_of_best]
+                return best
 
             if self.DYNAMIC:
                 self.progress = np.amax(self.fitnesses)
@@ -116,6 +118,4 @@ class GeneticAlgorithm(algo.Algorithm):
             if self.VERBOSE:
                 print max(self.fitnesses), 'of', self.num_clauses
 
-        index_of_best = np.where(self.fitnesses == self.num_clauses)[0][0]
-        best = self.pop[index_of_best]
-        return best
+        return None
