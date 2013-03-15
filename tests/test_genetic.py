@@ -26,15 +26,25 @@ class TestSequenceFunctions(unittest.TestCase):
         expected = vecfunc(copy)
         assert_equal(list(arr), list(expected))
 
+    def test_evaluate(self):
+        a = ga.GeneticAlgorithm(4, [[-1, 2, -4], [1, 2]])
+        r = a.calculate_fitness(np.array([True, True, False, False]))
+        assert_equal(r, 2)
+
     def test_evaluate_pop(self):
-        a = ga.GeneticAlgorithm(self.num_vars, self.clauses)
+        a = ga.GeneticAlgorithm(self.num_vars, self.clauses, {'NUM_CHROMOSOMES': 22})
         a.evaluate_fitness_of_population()
+        assert_equal(len(a.fitnesses), 22)
 
     def test_crossover(self):
         a = ga.GeneticAlgorithm(3)
         for x in range(5):
-            r = a.crossover([1, 1, 1], [2, 2, 2])
-            assert r in [[1, 1, 1], [1, 1, 2], [1, 2, 2], [2, 2, 2]]
+            r = a.crossover(np.array([1, 1, 1]), np.array([2, 2, 2]))
+            assert list(r) in [[1, 1, 1], [1, 1, 2], [1, 2, 2], [2, 2, 2]]
+
+    def test_run(self):
+        a = ga.GeneticAlgorithm(self.num_vars, self.clauses)
+        a.run()
 
 if __name__ == '__main__':
     unittest.main()
