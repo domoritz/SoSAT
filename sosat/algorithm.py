@@ -4,10 +4,12 @@ import numpy as np
 class Algorithm(object):
     SEED = 42
 
-    def __init__(self, num_vars=0, clauses=[]):
+    def __init__(self, num_vars=0, clauses=[], config={}):
         self.num_vars = num_vars
         self.num_lits = 2 * num_vars
         self.raw_clauses = clauses
+
+        self.__dict__.update(config)
 
         np.random.seed(self.SEED)
 

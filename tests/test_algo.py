@@ -15,6 +15,11 @@ class TestSequenceFunctions(unittest.TestCase):
         a = algo.Algorithm(self.num_vars, self.clauses)
         assert_equal(a.num_vars, self.num_vars)
         assert_equal(a.raw_clauses, self.clauses)
+        assert_equal(a.SEED, 42)
+
+    def test_config(self):
+        a = algo.Algorithm(self.num_vars, self.clauses, {'SEED': 64})
+        assert_equal(a.SEED, 64)
 
     def test_clause_creation(self):
         a = algo.Algorithm(4, [[-1, 2, -4]])

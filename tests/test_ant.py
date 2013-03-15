@@ -1,7 +1,7 @@
 import unittest
 from nose.tools import assert_equal
 
-import sosat.ant as aa
+import sosat.ant.algorithm as aa
 
 
 class TestSequenceFunctions(unittest.TestCase):
@@ -11,5 +11,5 @@ class TestSequenceFunctions(unittest.TestCase):
         cls.clauses = [[10, 12, 15, 5, 3], [6, 13, 14, -11, 20]]
 
     def test_initialization(self):
-        a = aa.Algorithm(self.num_vars, self.clauses)
+        a = aa.AntColonyAlgorithm(self.num_vars, self.clauses)
         assert_equal(a.solution_counter, 0)
