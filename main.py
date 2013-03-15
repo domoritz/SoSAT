@@ -19,6 +19,14 @@ class MyProcess(Process):
         self.event.set()
 
 
+def print_solution(solution):
+        sol = []
+        for i, lit in enumerate(solution):
+            sol.append(str(i if lit else -i))
+        sys.stdout.write("v " + ' '.join(sol) + '\n')
+        sys.stdout.write("s SATISFIABLE\n")
+
+
 if __name__ == '__main__':
     clp = argparse.ArgumentParser(description='SAT solver.')
     clp.add_argument('-a', '--algorithm', dest='algo',
@@ -40,18 +48,7 @@ if __name__ == '__main__':
 
     num_vars, clauses = parser.parse(args.infile)
 
-    processes = []
-    queue = Queue()
-    event = Event()
-
-    def print_solution(solution):
-        sol = []
-        for i, lit in enumerate(solution):
-            sol.append(str(i if lit else -i))
-        sys.stdout.write("v " + ' '.join(sol) + '\n')
-        sys.stdout.write("s SATISFIABLE\n")
-
-    def start(seed, queue):
+    def start(seed, queue=None):
         options = {
             'VERBOSE': args.verbose,
             'SEED': seed
@@ -66,7 +63,18 @@ if __name__ == '__main__':
             a = aa.AntColonyAlgorithm(num_vars, clauses, options)
         else:
             print "No such algorithm."
-        queue.put(a.run())
+        if queue:
+            queue.put(a.run())
+        else:
+            print_solution(a.run())
+
+    if args.N == 1:
+        start(args.seed)
+        exit()
+
+    processes = []
+    queue = Queue()
+    event = Event()
 
     if not args.N:
         args.N = multiprocessing.cpu_count()
@@ -85,3 +93,4 @@ if __name__ == '__main__':
         process.join()
 
     print_solution(queue.get())
+    exit()

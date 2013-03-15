@@ -6,11 +6,12 @@ import sosat.algorithm as algo
 class GeneticAlgorithm(algo.Algorithm):
     NUM_CHROMOSOMES = 100
     ELIRATE = 0.2
-    SELRATE = 0.3
+    SELRATE = 0.2
     NUM_ELITES = NUM_CHROMOSOMES * ELIRATE
     # actual selection is twice the size so that we always get pairs
     NUM_SELECTED = NUM_CHROMOSOMES * SELRATE
-    MUTATION_RATE = 0.3
+    MUTATION_RATE = 0.4
+    NUM_FOR_FORCE = 1
 
     def __init__(self, num_vars=0, clauses=[], config={}):
         super(GeneticAlgorithm, self).__init__(num_vars, clauses, config)
@@ -32,33 +33,50 @@ class GeneticAlgorithm(algo.Algorithm):
         cop = np.random.randint(0, self.num_vars)
         return np.concatenate([c1[:cop], c2[cop:]])
 
-    def calculate_fitness(self, chromosome):
-        return sum(self.evaluate_candidate(chromosome))
-
     def evaluate_fitnesses(self, popuation, fitnesses):
         for i, chromosome in enumerate(popuation):
-            fitnesses[i] = self.calculate_fitness(chromosome)
+            fitnesses[i] = sum(self.evaluate_candidate(chromosome))
 
     def evaluate_fitness_of_population(self):
         self.evaluate_fitnesses(self.pop, self.fitnesses)
 
-    def get_non_elites(self):
+    def get_elites(self, limit=None):
+        limit = limit or self.NUM_ELITES
+        indexes = bn.argpartsort(-self.fitnesses, n=self.NUM_ELITES)
+        return indexes[:limit]
+
+    def get_non_elites(self, limit):
         # get indexes of chromosomes that are not elites
         indexes = bn.argpartsort(-self.fitnesses, n=self.NUM_ELITES)
         num_no_elites = self.NUM_CHROMOSOMES - self.NUM_ELITES
         no_elites = indexes[-num_no_elites:]
         np.random.shuffle(no_elites)
-        return no_elites[:self.NUM_SELECTED]
+        return no_elites[:limit]
 
     def get_selection(self):
         # selects random parents
         return np.random.randint(0, self.NUM_CHROMOSOMES, size=2 * self.NUM_SELECTED)
 
-    def show(self):
-        print "Population:"
-        for i, chromosome in enumerate(self.pop):
+    def show(self, chromosomes=None):
+        print "Chromosomes:"
+        chromosomes = chromosomes if chromosomes is not None else self.pop
+        for i, chromosome in enumerate(chromosomes):
             print i, chromosome, self.fitnesses[i]
         print max(self.fitnesses), 'of', self.num_clauses
+
+    def force_missing(self, no_elites):
+        elites = self.get_elites(self.NUM_FOR_FORCE)
+        for i, elite in enumerate(elites):
+            elite_chromosome = self.pop[elite].copy()
+            e = self.evaluate_candidate(elite_chromosome)
+            # get unsatisfied clause
+            clause = self.clauses[np.where(e == False)[0][0]]
+            # make it true
+            i = 0 if np.any(clause[0]) else 1
+            one_lit = np.where(clause[i] == True)[0][0]
+            elite_chromosome[one_lit] = not elite_chromosome[one_lit]
+            self.pop[no_elites[i]] = elite_chromosome
+            self.fitnesses[no_elites[i]] = sum(self.evaluate_candidate(elite_chromosome))
 
     def run(self):
         assert(self.NUM_CHROMOSOMES - self.NUM_ELITES > self.NUM_SELECTED)
@@ -72,16 +90,18 @@ class GeneticAlgorithm(algo.Algorithm):
                 offspring[i] = self.crossover(self.pop[pair[0]], self.pop[pair[1]])
             self.mutate_offspring(offspring)
             self.evaluate_fitnesses(offspring, offspring_fitnesses)
-            no_elites = self.get_non_elites()
+            no_elites = self.get_non_elites(self.NUM_SELECTED)
             self.pop[no_elites] = offspring
             self.fitnesses[no_elites] = offspring_fitnesses
 
             if self.num_clauses in self.fitnesses:
                 break
 
+            self.force_missing(no_elites)
+
             if self.VERBOSE:
                 print max(self.fitnesses), 'of', self.num_clauses
 
-        index_of_best = list(self.fitnesses).index(self.num_clauses)
+        index_of_best = np.where(self.fitnesses == self.num_clauses)[0][0]
         best = self.pop[index_of_best]
         return best
