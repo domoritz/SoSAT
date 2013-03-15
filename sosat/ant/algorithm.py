@@ -1,5 +1,15 @@
+print "11"
+import numba as nb
 import numpy as np
 import sosat.algorithm as algo
+print "aaa"
+
+NUMBA___init__ = nb.void(nb.int_, nb.int_[:], nb.object_)
+NUMBA_void = nb.void()
+NUMBA_choose_nodes = nb.bool_[:]()
+NUMBA_evaluate_solution = nb.double[:](nb.bool_[:])
+NUMBA_update_pheromones = nb.void(nb.bool_[:], nb.double)
+NUMBA_blur_pheromones = nb.void(nb.double)
 
 class AntColonyAlgorithm(algo.Algorithm):
     NUM_ANTS = 250                 # range: [1, inf)
@@ -11,8 +21,9 @@ class AntColonyAlgorithm(algo.Algorithm):
     BLUR_BASIC = 0.9
     BLUR_DECLINE = 50.0
     WEIGHT_ADAPTION_DURATION = 250
-
+ 
     def __init__(self, num_vars=0, clauses=[], config={}):
+        print "!!!!"
         # clause form: [-x1, x1, -x2, x2, -x3, x3, ...] (0/1)
         super(AntColonyAlgorithm, self).__init__(num_vars, clauses, config)
         print self.raw_clauses
@@ -23,11 +34,12 @@ class AntColonyAlgorithm(algo.Algorithm):
         self.initialize_pheromones()
         self.initialize_mcv_heuristic()
         self.initialize_probabilities()
-
+    
     def initialize_clauses(self):
         super(AntColonyAlgorithm, self).initialize_clauses()
         self.int_clauses = self.clauses.astype(int)
 
+    @NUMBA_void
     def initialize_variables(self):
         self.candidate_counter = 0
 
@@ -36,9 +48,11 @@ class AntColonyAlgorithm(algo.Algorithm):
         self.PH_MIN = self.PH_MAX / self.num_lits
         print "PH_MIN: ", self.PH_MIN, ", PH_MAX: ", self.PH_MAX
 
+    @NUMBA_void
     def initialize_clause_weights(self):
         self.clause_weights = np.ones(len(self.clauses))
 
+    @NUMBA_void
     def initialize_mcv_heuristic(self):
         '''
         Most Constrained Variable (MCV) heuristic: variables that appear in most
@@ -47,6 +61,7 @@ class AntColonyAlgorithm(algo.Algorithm):
         self.mcv = np.sum(self.int_clauses, axis=0)
         print "init mcv: ", self.mcv
 
+    @NUMBA_void
     def initialize_pheromones(self):
         '''
         All pheromone values are initialized to PH_MAX.
@@ -54,18 +69,22 @@ class AntColonyAlgorithm(algo.Algorithm):
         self.pheromones = np.ndarray((2, self.num_vars), float)
         self.pheromones.fill(self.PH_MAX)
 
+    @NUMBA_void
     def initialize_probabilities(self):
         self.probabilities = np.ndarray((2, self.num_vars), float)
         self.update_probabilities()
 
+    @NUMBA_void
     def update_probabilities(self):
         self.probabilities = self.pheromones**self.EXP_PH * self.mcv**self.EXP_MCV
 
+    @NUMBA_choose_nodes
     def choose_nodes(self):
         normalization_vector = np.sum(self.pheromones, axis=0) ** -1
         chosen = np.random.rand(self.num_vars) < normalization_vector * self.pheromones[0]
         return chosen
 
+    @NUMBA_evaluate_solution
     def evaluate_solution(self, chosen):
         self.candidate_counter += 1
 
@@ -80,20 +99,24 @@ class AntColonyAlgorithm(algo.Algorithm):
         #print "evaluation: ", chosen_nodes, evaluation, solved_clauses
         return evaluation, num_solved_clauses
 
+    @NUMBA_update_pheromones
     def update_pheromones(self, chosen, evaluation):
         self.pheromones = self.pheromones * (1.0 - self.PH_REDUCE_FACTOR) + self.full_candidate(chosen) * evaluation
         self.update_pheromones_bounds()
-
+    
+    @NUMBA_void
     def update_pheromones_bounds(self):
         self.pheromones[self.pheromones < self.PH_MIN] = self.PH_MIN
         self.pheromones[self.pheromones > self.PH_MAX] = self.PH_MAX
 
+    @NUMBA_blur_pheromones
     def blur_pheromones(self, max_divergence):
         self.pheromones += self.pheromones * (np.random.rand(2, self.num_vars) * max_divergence * 2 - max_divergence)
         self.update_pheromones_bounds()
         self.update_probabilities()
         #print "BLUR: ", max_divergence, self.pheromones
 
+    @NUMBA_void
     def run(self):
         for i in range(self.MAX_ITERATIONS):
             best_solution = None
@@ -122,4 +145,6 @@ class AntColonyAlgorithm(algo.Algorithm):
 
             if i > 0 and i % self.BLUR_ITERATIONS == 0:
                 self.blur_pheromones(self.BLUR_BASIC * np.e**(-i/self.BLUR_DECLINE))
+
+print "fff"
 
