@@ -36,7 +36,7 @@ class GeneticAlgorithm(algo.Algorithm):
 
     def evaluate_fitnesses(self, popuation, fitnesses):
         for i, chromosome in enumerate(popuation):
-            fitnesses[i] = sum(self.evaluate_candidate(chromosome))
+            fitnesses[i] = np.sum(self.evaluate_candidate(chromosome))
 
     def evaluate_fitness_of_population(self):
         self.evaluate_fitnesses(self.pop, self.fitnesses)
@@ -77,7 +77,7 @@ class GeneticAlgorithm(algo.Algorithm):
             one_lit = np.where(clause[i] == True)[0][0]
             elite_chromosome[one_lit] = not elite_chromosome[one_lit]
             self.pop[no_elites[i]] = elite_chromosome
-            self.fitnesses[no_elites[i]] = sum(self.evaluate_candidate(elite_chromosome))
+            self.fitnesses[no_elites[i]] = np.sum(self.evaluate_candidate(elite_chromosome))
 
     def adjust_parameters(self):
         pass
@@ -108,7 +108,8 @@ class GeneticAlgorithm(algo.Algorithm):
             if self.num_clauses in self.fitnesses:
                 break
 
-            self.progress = np.amax(self.fitnesses)
+            if self.DYNAMIC:
+                self.progress = np.amax(self.fitnesses)
 
             self.force_missing(no_elites)
 

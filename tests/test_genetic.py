@@ -17,8 +17,9 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_evaluate(self):
         a = ga.GeneticAlgorithm(4, [[-1, 2, -4], [1, 2]])
-        r = a.calculate_fitness(np.array([True, True, False, False]))
-        assert_equal(r, 2)
+        r = np.zeros(1)
+        a.evaluate_fitnesses(np.array([[True, True, False, False]]), r)
+        assert_equal(r[0], 2)
 
     def test_evaluate_pop(self):
         a = ga.GeneticAlgorithm(self.num_vars, self.clauses, {'NUM_CHROMOSOMES': 22})
