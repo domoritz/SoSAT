@@ -2,9 +2,9 @@ import numpy as np
 import sosat.algorithm as algo
 
 class SimulatedAnnealing(algo.Algorithm):
-    INITIAL_TEMPERATURE = 250.0
+    INITIAL_TEMPERATURE = 15.0
     TEMPERATURE = INITIAL_TEMPERATURE
-    ITERATIONS = 1000
+    ITERATIONS = 5
     ENERGY_MULTIPLICATOR = 8 
 
     def __init__(self, num_vars=0, clauses=[], config={}):
@@ -13,8 +13,8 @@ class SimulatedAnnealing(algo.Algorithm):
     def run(self):
         candidate = np.random.choice([True, False], self.num_vars)
         quality = np.sum(self.evaluate_candidate(candidate))
-
-        while self.TEMPERATURE > 0:
+        TEMPERATURE = self.TEMPERATURE
+        while TEMPERATURE > 0:
             max_toggles = 3 
             #self.num_clauses / 4 
             #int(self.TEMPERATURE / self.INITIAL_TEMPERATURE * self.num_vars * 3 / 4) + 1
@@ -33,11 +33,14 @@ class SimulatedAnnealing(algo.Algorithm):
 
                 #print "diff: ", new_quality - quality, "P = ", np.e ** ((new_quality - quality) / self.TEMPERATURE)
 
-                if np.random.rand() < np.e ** ((new_quality - quality) * self.ENERGY_MULTIPLICATOR / self.TEMPERATURE):
+                if np.random.rand() < np.e ** ((new_quality - quality) * self.ENERGY_MULTIPLICATOR / TEMPERATURE):
                     candidate, quality = new_candidate, new_quality
 
-            self.TEMPERATURE = self.TEMPERATURE - 1
-            
-            if self.TEMPERATURE % 10 == 0:
-                print "T = ", self.TEMPERATURE 
-                print quality, " / ", self.num_clauses
+            TEMPERATURE = TEMPERATURE - 1
+                
+            #if TEMPERATURE % 10 == 0:
+            #    print "T = ", TEMPERATURE 
+            #    print quality, " / ", self.num_clauses
+
+        return candidate
+        print quality, " / ", self.num_clauses
