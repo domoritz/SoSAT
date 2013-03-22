@@ -1,6 +1,7 @@
 import numpy as np
 import bottleneck as bn
 import sosat.algorithm as algo
+import sosat.annealing.algorithm as sa
 
 
 class GeneticAlgorithm(algo.Algorithm):
@@ -12,6 +13,7 @@ class GeneticAlgorithm(algo.Algorithm):
     NUM_SELECTED = NUM_CHROMOSOMES * SELRATE
     MUTATION_RATE = 0.4
     NUM_FOR_FORCE = 1
+    NUM_GOOD_START = 0
     DYNAMIC = False
 
     def __init__(self, num_vars=0, clauses=[], config={}):
@@ -21,8 +23,11 @@ class GeneticAlgorithm(algo.Algorithm):
         self.generate_initial_population()
 
     def generate_initial_population(self):
+        a = sa.SimulatedAnnealing(self.num_vars, self.raw_clauses, {'SEED': self.SEED})
         shape = (self.NUM_CHROMOSOMES, self.num_vars)
         self.pop = np.random.choice([True, False], shape)
+        for i in range(self.NUM_GOOD_START):
+            self.pop[i] = a.run()
 
     def mutate_offspring(self, chromosomes):
         size = len(chromosomes)

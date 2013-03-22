@@ -37,7 +37,7 @@ if __name__ == '__main__':
     clp.add_argument('-v', '--verbose', dest='verbose',
                      default=False, action='store_true',
                      help='print stats and status message')
-    clp.add_argument('-s', '--seed', dest='seed',
+    clp.add_argument('-s', '--seed', dest='seed', type=int,
                      default=42,
                      help='seed for random number generator')
     clp.add_argument('-N', '--number', dest='N',
