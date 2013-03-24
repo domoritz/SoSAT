@@ -94,7 +94,8 @@ class GeneticAlgorithm(algo.Algorithm):
             e = self.evaluate_candidate(elite_chromosome)
             # get unsatisfied clause
             clause = self.clauses[np.where(e == False)[0][0]]
-            # make it true
+            # need one literal that can be toggled because it is defined
+            # first look to such a literal in the negative literals
             i = 0 if np.any(clause[0]) else 1
             one_lit = np.where(clause[i] == True)[0][0]
             elite_chromosome[one_lit] = not elite_chromosome[one_lit]
