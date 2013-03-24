@@ -123,7 +123,9 @@ class GeneticAlgorithm(algo.Algorithm):
         # replaces last in no_elites
         shape = (self.NUM_NEW_RANDOM, self.num_vars)
         new_random = np.random.choice([True, False], shape)
-        self.pop[no_elites[-self.NUM_NEW_RANDOM:]] = new_random
+        index = no_elites[-self.NUM_NEW_RANDOM:]
+        self.pop[index] = new_random
+        self.fitnesses[index] = np.sum(self.evaluate_candidate(new_random))
 
     def run(self):
         if self.VERBOSE:
