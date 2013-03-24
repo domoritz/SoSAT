@@ -96,8 +96,8 @@ class GeneticAlgorithm(algo.Algorithm):
             clause = self.clauses[np.where(e == False)[0][0]]
             # need one literal that can be toggled because it is defined
             # first look to such a literal in the negative literals
-            i = 0 if np.any(clause[0]) else 1
-            one_lit = np.where(clause[i] == True)[0][0]
+            select = 0 if np.any(clause[0]) else 1
+            one_lit = np.where(clause[select] == True)[0][0]
             elite_chromosome[one_lit] = not elite_chromosome[one_lit]
             self.pop[no_elites[i]] = elite_chromosome
             self.fitnesses[no_elites[i]] = np.sum(self.evaluate_candidate(elite_chromosome))
