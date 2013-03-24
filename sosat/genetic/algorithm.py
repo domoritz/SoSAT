@@ -9,17 +9,17 @@ class GeneticAlgorithm(algo.Algorithm):
     NUM_CHROMOSOMES = 100
 
     # Relative number of elites
-    ELIRATE = 0.2
+    ELIRATE = 0.10
 
     # Relative number of individuals selected for
     # breeding offspring.
-    SELRATE = 0.3
+    SELRATE = 0.25
 
     # Probability for mutation of offspring
     MUTATION_RATE = 0.4
 
     # Number of individuals where false clauses are forced true
-    NUM_FORCED = 0
+    NUM_FORCED = 1
 
     # number of random individuals that are generated os offspring
     NUM_NEW_RANDOM = 0
@@ -28,7 +28,12 @@ class GeneticAlgorithm(algo.Algorithm):
     # simulated annealing and used in the initial population
     NUM_GOOD_START = 1
 
-    NUM_ELITES = int(NUM_CHROMOSOMES * ELIRATE)
+    # We can wither select randomly or the once with a better performance with
+    # a higher probability
+    SELECT_PROBABILITY = True
+
+    # We need at least one elite
+    NUM_ELITES = max(1, int(NUM_CHROMOSOMES * ELIRATE))
     # Actual selection is twice the size so that we always get pairs
     NUM_SELECTED = int(2 * (NUM_CHROMOSOMES * (SELRATE / 2)))
 
@@ -76,8 +81,20 @@ class GeneticAlgorithm(algo.Algorithm):
         return no_elites[:limit]
 
     def get_selection(self):
-        # selects random parents
-        return np.random.randint(0, self.NUM_CHROMOSOMES, (self.NUM_SELECTED, 2))
+        if self.SELECT_PROBABILITY:
+            # timeit -n10000 np.random.choice(100, (50, 2), replace=False)
+            # 10000 loops, best of 3: 61 us per loop
+            p = self.fitnesses.astype(np.float32)
+            p -= max(0, np.min(p) - 1)
+            p /= np.sum(p)
+            return np.random.choice(
+                self.NUM_CHROMOSOMES, (self.NUM_SELECTED, 2),
+                p=p, replace=False)
+        else:
+            # selects random parents, faster than choice
+            # timeit np.random.randint(0, 100, (50, 2))
+            # 100000 loops, best of 3: 2.87 us per loop
+            return np.random.randint(0, self.NUM_CHROMOSOMES, (self.NUM_SELECTED, 2))
 
     def show(self, chromosomes=None):
         print "Chromosomes:"
