@@ -6,7 +6,7 @@ import sosat.annealing.algorithm as sa
 
 class GeneticAlgorithm(algo.Algorithm):
     # Population size
-    NUM_CHROMOSOMES = 100
+    NUM_CHROMOSOMES = 200
 
     # Relative number of elites
     ELIRATE = 0.10
@@ -32,13 +32,13 @@ class GeneticAlgorithm(algo.Algorithm):
     # a higher probability
     SELECT_PROBABILITY = True
 
-    # We need at least one elite
-    NUM_ELITES = max(1, int(NUM_CHROMOSOMES * ELIRATE))
-    # Actual selection is twice the size so that we always get pairs
-    NUM_SELECTED = int(2 * (NUM_CHROMOSOMES * (SELRATE / 2)))
-
     def __init__(self, num_vars=0, clauses=[], config={}):
         super(GeneticAlgorithm, self).__init__(num_vars, clauses, config)
+
+        # We need at least one elite
+        self.NUM_ELITES = max(1, int(self.NUM_CHROMOSOMES * self.ELIRATE))
+        # Actual selection is twice the size so that we always get pairs
+        self.NUM_SELECTED = int(2 * (self.NUM_CHROMOSOMES * (self.SELRATE / 2)))
 
         self.fitnesses = np.zeros(self.NUM_CHROMOSOMES, dtype=np.int)
         self.generate_initial_population()

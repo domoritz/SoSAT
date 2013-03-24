@@ -26,6 +26,7 @@ def run():
             ys.append(v)
     plt.scatter(xs, ys, s=10, alpha=0.15)
     '''
+    # or hist2d
     import matplotlib.cm as cm
     plt.hexbin(xs, ys, gridsize=45, cmap=cm.jet, bins=None)
     plt.axis([min(xs), max(xs), min(ys), max(ys)])
