@@ -26,7 +26,7 @@ def print_solution(solution):
         sys.stdout.write("v " + ' '.join(sol) + '\n')
         sys.stdout.write("s SATISFIABLE\n")
     else:
-        sys.stdout.write("s UNSATISFIABLE\n")
+        sys.stdout.write("s UNKNOWN\n")
 
 
 if __name__ == '__main__':
@@ -57,7 +57,7 @@ if __name__ == '__main__':
         }
 
         if args.verbose:
-            print "Start one process with args", options
+            print "c Start one process with args", options
 
         if args.algo == 'genetic':
             a = ga.GeneticAlgorithm(num_vars, clauses, options)
