@@ -134,13 +134,14 @@ class GeneticAlgorithm(algo.Algorithm):
             print "c Elites:    ", self.NUM_ELITES
             print "c Forced:    ", self.NUM_FORCED
 
+        # for stats
+        self.progress = []
+
         # cannot select individuals when there are not enough or too many elites
         assert(2 * self.NUM_SELECTED < self.NUM_CHROMOSOMES - self.NUM_ELITES)
         # cannot have more forced and random than we have selected
         assert(self.NUM_FORCED + self.NUM_NEW_RANDOM < self.NUM_SELECTED)
         self.evaluate_fitness_of_population()
-
-        self.progress = 0
 
         offspring = np.zeros((self.NUM_SELECTED, self.num_vars), dtype=np.bool)
         offspring_fitnesses = np.zeros(self.NUM_SELECTED, dtype=np.int)
@@ -159,9 +160,6 @@ class GeneticAlgorithm(algo.Algorithm):
                 best = self.pop[index_of_best]
                 return best
 
-            if self.VERBOSE:
-                self.progress = np.amax(self.fitnesses)
-
             if self.NUM_FORCED:
                 self.force_missing(no_elites)
             if self.NUM_NEW_RANDOM:
@@ -170,5 +168,7 @@ class GeneticAlgorithm(algo.Algorithm):
             if self.VERBOSE:
                 print 'c', 'Iteration', iteration
                 print 'c', max(self.fitnesses), 'of', self.num_clauses
+            if self.COLLECT_STATS:
+                self.progress.append(np.amax(self.fitnesses))
 
         return None

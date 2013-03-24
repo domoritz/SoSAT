@@ -4,6 +4,7 @@ import numpy as np
 class Algorithm(object):
     SEED = 42
     VERBOSE = False
+    COLLECT_STATS = False
     MAX_ITERATIONS = 25000
 
     def __init__(self, num_vars=0, clauses=[], config={}):
