@@ -14,7 +14,6 @@ class Algorithm(object):
 
         self.__dict__.update(config)
 
-        print self.SEED
         np.random.seed(self.SEED)
 
         self.initialize_clauses()
