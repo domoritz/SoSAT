@@ -127,6 +127,13 @@ class GeneticAlgorithm(algo.Algorithm):
         self.pop[index] = new_random
         self.fitnesses[index] = np.sum(self.evaluate_candidate(new_random))
 
+    def collect(self):
+        self.progress.append(
+            {
+                'best': np.amax(self.fitnesses),
+                'values': self.fitnesses.copy()
+            })
+
     def run(self):
         if self.VERBOSE:
             print "c Population:", self.NUM_CHROMOSOMES
@@ -158,6 +165,8 @@ class GeneticAlgorithm(algo.Algorithm):
             if self.num_clauses in self.fitnesses:
                 index_of_best = np.where(self.fitnesses == self.num_clauses)[0][0]
                 best = self.pop[index_of_best]
+                if self.COLLECT_STATS:
+                    self.collect()
                 return best
 
             if self.NUM_FORCED:
@@ -169,6 +178,6 @@ class GeneticAlgorithm(algo.Algorithm):
                 print 'c', 'Iteration', iteration
                 print 'c', max(self.fitnesses), 'of', self.num_clauses
             if self.COLLECT_STATS:
-                self.progress.append(np.amax(self.fitnesses))
+                self.collect()
 
         return None
