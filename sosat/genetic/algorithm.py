@@ -53,9 +53,7 @@ class GeneticAlgorithm(algo.Algorithm):
 
     def crossover(self, c1, c2):
         cop = np.random.randint(0, self.num_vars)
-        o1 = np.concatenate([c1[:cop], c2[cop:]])
-        o2 = np.concatenate([c2[:cop], c1[cop:]])
-        return o1, o2
+        return np.concatenate([c1[:cop], c2[cop:]])
 
     def evaluate_fitnesses(self, popuation, fitnesses):
         for i, chromosome in enumerate(popuation):
@@ -79,7 +77,7 @@ class GeneticAlgorithm(algo.Algorithm):
 
     def get_selection(self):
         # selects random parents
-        return np.random.randint(0, self.NUM_CHROMOSOMES, (self.NUM_SELECTED / 2, 2))
+        return np.random.randint(0, self.NUM_CHROMOSOMES, (self.NUM_SELECTED, 2))
 
     def show(self, chromosomes=None):
         print "Chromosomes:"
@@ -129,10 +127,8 @@ class GeneticAlgorithm(algo.Algorithm):
         offspring_fitnesses = np.zeros(self.NUM_SELECTED, dtype=np.int)
         for iteration in xrange(self.MAX_ITERATIONS):
             selection = self.get_selection()
-            assert(2 * len(selection) == len(offspring))
-            offset = self.NUM_SELECTED / 2
             for i, pair in enumerate(selection):
-                offspring[i], offspring[i + offset] = self.crossover(self.pop[pair[0]], self.pop[pair[1]])
+                offspring[i] = self.crossover(self.pop[pair[0]], self.pop[pair[1]])
             self.mutate_offspring(offspring)
             self.evaluate_fitnesses(offspring, offspring_fitnesses)
             no_elites = self.get_non_elites(self.NUM_SELECTED)

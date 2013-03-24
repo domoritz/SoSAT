@@ -29,9 +29,8 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_crossover(self):
         a = ga.GeneticAlgorithm(3)
         for x in range(5):
-            r = a.crossover(np.array([1, 2, 3]), np.array([4, 5, 6]))
-            assert list(r[0]) in [[1, 2, 3], [1, 2, 6], [1, 5, 6], [4, 5, 6]], r[0]
-            assert list(r[1]) in [[1, 2, 3], [4, 2, 3], [4, 5, 3], [4, 5, 6]], r[1]
+            r = a.crossover(np.array([1, 1, 1]), np.array([2, 2, 2]))
+            assert list(r) in [[1, 1, 1], [1, 1, 2], [1, 2, 2], [2, 2, 2]]
 
     def test_run(self):
         a = ga.GeneticAlgorithm(self.num_vars, self.clauses)
