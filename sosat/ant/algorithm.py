@@ -5,8 +5,8 @@ import sosat.algorithm as algo
 class AntColonyAlgorithm(algo.Algorithm):
     NUM_ANTS = 250                 # range: [1, inf)
     EXP_PH = 1                     # range: (-inf, inf)
-    EXP_MCV = 1                    # range: (-inf, inf)
-    PH_REDUCE_FACTOR = 0.15     # range: (0, 1)
+    EXP_MCV = 0.5                  # range: (-inf, inf)
+    PH_REDUCE_FACTOR = 0.15        # range: (0, 1)
     BLUR_ITERATIONS = 3
     BLUR_BASIC = 0.9
     BLUR_DECLINE = 50.0
@@ -15,7 +15,6 @@ class AntColonyAlgorithm(algo.Algorithm):
     def __init__(self, num_vars=0, clauses=[], config={}):
         # clause form: [-x1, x1, -x2, x2, -x3, x3, ...] (0/1)
         super(AntColonyAlgorithm, self).__init__(num_vars, clauses, config)
-        #print self.raw_clauses
 
         self.initialize_constants()
         self.initialize_variables()
@@ -45,7 +44,6 @@ class AntColonyAlgorithm(algo.Algorithm):
         clauses are more important and visited more often.
         '''
         self.mcv = np.sum(self.int_clauses, axis=0)
-        #print "init mcv: ", self.mcv
 
     def initialize_pheromones(self):
         '''
@@ -62,8 +60,8 @@ class AntColonyAlgorithm(algo.Algorithm):
         self.probabilities = self.pheromones**self.EXP_PH * self.mcv**self.EXP_MCV
 
     def choose_nodes(self):
-        normalization_vector = np.sum(self.pheromones, axis=0) ** -1
-        chosen = np.random.rand(self.num_vars) < normalization_vector * self.pheromones[0]
+        normalization_vector = np.sum(self.probabilities, axis=0) ** -1
+        chosen = np.random.rand(self.num_vars) < normalization_vector * self.probabilities[0]
         return chosen
 
     def evaluate_solution(self, chosen):
