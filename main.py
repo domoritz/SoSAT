@@ -119,11 +119,11 @@ if __name__ == '__main__':
     # run default config with seed
     seeds = range(args.seed, args.seed + args.N - max(0, len(algo.profiles)))
     for seed in seeds:
+        config = {
+            'VERBOSE': args.verbose,
+            'SEED': seed + len(algo.profiles)
+        }
         for instance in factored_instances:
-            config = {
-                'VERBOSE': args.verbose,
-                'SEED': seed + len(algo.profiles)
-            }
             p = MyProcess(target=start, args=(instance, config, queue))
             p.start()
             processes.append(p)
