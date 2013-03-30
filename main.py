@@ -20,11 +20,10 @@ class MyProcess(Process):
 
 
 def print_solution(instance_solution, num_vars):
-    instance, p_solution = instance_solution
-
-    if p_solution is False:
+    if instance_solution is False:
         sys.stdout.write("s UNSATISFIABLE\n")
-    elif p_solution is not None:
+    elif instance_solution is not None:
+        instance, p_solution = instance_solution
         solution = preprocessing.restore_original_solution(instance, p_solution, num_vars)
 
         sol = []
@@ -79,7 +78,7 @@ if __name__ == '__main__':
         dprint("c", i, " / ", num_vars, "original variables")
 
     def start(instance, config, queue):
-        if not instance == False:
+        if instance:
             # detected that this is unsolvable during preprocessing
             queue.put((instance, False))
             return
@@ -134,7 +133,7 @@ if __name__ == '__main__':
 
     for i in xrange(len(seeds) * len(factored_instances)):
         solution = queue.get()
-        if solution[0] == False:
+        if not solution[0]:
             false_counter += 1
         elif solution is not None:
             print_solution(solution, num_vars)
