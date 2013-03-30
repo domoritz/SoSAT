@@ -50,7 +50,7 @@ if __name__ == '__main__':
                      default=1, type=int,
                      help='number of processes')
     clp.add_argument('-f', '--factor', dest='f',
-                     default=1, type=int,
+                     default=0, type=int,
                      help='number of factored (most-constrained) variables')
     clp.add_argument('infile', nargs='?', type=argparse.FileType('r'),
                      default=sys.stdin)
@@ -60,6 +60,11 @@ if __name__ == '__main__':
 
     num_vars, clauses = parser.parse(args.infile)
     factored_instances = preprocessing.factored_instances(num_vars, clauses, min(args.f, num_vars))
+
+    if len([x for x in factored_instances if x is False]) == factored_instances:
+        # unsatisfiable
+        print_solution(False, 0)
+        exit()
 
     if args.algo == 'genetic':
         algo = ga.GeneticAlgorithm
@@ -78,6 +83,7 @@ if __name__ == '__main__':
         dprint("c", i, " / ", num_vars, "original variables")
 
     def start(instance, config, queue):
+        dprint("c Start", config)
         if instance:
             # detected that this is unsolvable during preprocessing
             queue.put((instance, False))
@@ -127,15 +133,12 @@ if __name__ == '__main__':
             p.start()
             processes.append(p)
 
-    false_counter = 0
-
     dprint("c Waiting for at most", len(seeds) * len(factored_instances), "results...")
 
-    for i in xrange(len(seeds) * len(factored_instances)):
+    for i in xrange(len(processes)):
         solution = queue.get()
-        if not solution[0]:
-            false_counter += 1
-        elif solution is not None:
+        if solution is not None:
+            print(solution)
             print_solution(solution, num_vars)
 
             for process in processes:
@@ -143,7 +146,5 @@ if __name__ == '__main__':
 
             exit()
 
-    if false_counter == len(seeds) * len(factored_instances):
-        print_solution(False, 0)
-    else:
-        print_solution(None, 0)
+    # unknown
+    print_solution(None, 0)
