@@ -84,10 +84,6 @@ if __name__ == '__main__':
 
     def start(instance, config, queue):
         dprint("c Start", config)
-        if instance:
-            # detected that this is unsolvable during preprocessing
-            queue.put((instance, False))
-            return
 
         if len(instance[1]) == 0:
             # found solution during preprocessing
@@ -138,7 +134,6 @@ if __name__ == '__main__':
     for i in xrange(len(processes)):
         solution = queue.get()
         if solution is not None:
-            print(solution)
             print_solution(solution, num_vars)
 
             for process in processes:
