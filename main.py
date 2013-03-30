@@ -139,7 +139,7 @@ if __name__ == '__main__':
         args.N = multiprocessing.cpu_count()
 
     # run profiles
-    dprint("c Run {} profiles".format(len(algo.profiles)))
+    dprint("Run {} profiles".format(len(algo.profiles)))
 
     # run algorithm for every factored instance with every profile
     for profile in algo.profiles:
