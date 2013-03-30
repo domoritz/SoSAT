@@ -41,7 +41,6 @@ def preprocess(num_vars, clauses, assumptions):
 
                     if len(new_clause) == 0:
                         # instance with these assumptions is unsolvable
-                        print "NO!"
                         return False
 
                 elif var not in d:

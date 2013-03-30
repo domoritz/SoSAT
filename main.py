@@ -60,6 +60,11 @@ if __name__ == '__main__':
             print i[0], " / ", num_vars
      
     def start(instance, seed, queue):
+        if instance is None:
+            # detected that this is unsolvable during preprocessing
+            queue.put((instance, None))
+            return
+
         options = {
             'VERBOSE': args.verbose,
             'SEED': seed
