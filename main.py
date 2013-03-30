@@ -16,7 +16,9 @@ class MyProcess(Process):
 def print_solution(instance_solution):
     instance, p_solution = instance_solution
 
-    if p_solution is not None:
+    if p_solution == False:
+        sys.stdout.write("s UNSATISFIABLE\n")
+    elif p_solution is not None:
         solution = preprocessing.restore_original_solution(instance, p_solution)
 
         sol = []
@@ -60,9 +62,9 @@ if __name__ == '__main__':
             print i[0], " / ", num_vars
      
     def start(instance, seed, queue):
-        if instance is None:
+        if instance == False:
             # detected that this is unsolvable during preprocessing
-            queue.put((instance, None))
+            queue.put((instance, False))
             return
 
         options = {
@@ -96,8 +98,11 @@ if __name__ == '__main__':
             p.start()
             processes.append(p)
 
+    false_counter = 0
     for i in xrange(len(seeds) * len(factored_instances)):
         solution = queue.get()
+        if solution == False:
+            false_counter += 1
         if solution is not None:
             print_solution(solution)
      
@@ -106,4 +111,7 @@ if __name__ == '__main__':
     
             exit()
     
-    print_solution(None)
+    if false_counter == len(seeds) * len(factored_instances):
+        print_solution(False)
+    else:
+        print_solution(None)
