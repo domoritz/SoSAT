@@ -9,17 +9,19 @@ import sosat.ant.algorithm as aa
 import sosat.parser as parser
 import sosat.preprocessing as preprocessing
 
+VERBOSE = False
+
 class MyProcess(Process):
     def run(self):
         Process.run(self)
 
-def print_solution(instance_solution):
+def print_solution(instance_solution, num_vars):
     instance, p_solution = instance_solution
 
-    if p_solution == False:
+    if p_solution is False:
         sys.stdout.write("s UNSATISFIABLE\n")
     elif p_solution is not None:
-        solution = preprocessing.restore_original_solution(instance, p_solution)
+        solution = preprocessing.restore_original_solution(instance, p_solution, num_vars)
 
         sol = []
         for i, lit in enumerate(solution):
@@ -50,21 +52,28 @@ if __name__ == '__main__':
     clp.add_argument('infile', nargs='?', type=argparse.FileType('r'),
                      default=sys.stdin)
 
+
     args = clp.parse_args()
+    VERBOSE = args.verbose
 
     num_vars, clauses = parser.parse(args.infile)
-    factored_instances = preprocessing.factored_instances(num_vars, clauses, args.f)
+    factored_instances = preprocessing.factored_instances(num_vars, clauses, min(args.f, num_vars))
 
     if args.verbose:
         print "Reduced instances:"
-
+        
         for i in factored_instances:
-            print i[0], " / ", num_vars
+            print i, " / ", num_vars, "original variables"
      
     def start(instance, seed, queue):
         if instance == False:
             # detected that this is unsolvable during preprocessing
             queue.put((instance, False))
+            return
+        
+        if len(instance[1]) == 0:
+            # found solution during preprocessing
+            queue.put((instance, []))
             return
 
         options = {
@@ -99,12 +108,16 @@ if __name__ == '__main__':
             processes.append(p)
 
     false_counter = 0
+
+    if VERBOSE:
+        print "Waiting for at most", len(seeds) * len(factored_instances), "results..."
+
     for i in xrange(len(seeds) * len(factored_instances)):
         solution = queue.get()
-        if solution == False:
+        if solution[0] == False:
             false_counter += 1
-        if solution is not None:
-            print_solution(solution)
+        elif solution is not None:
+            print_solution(solution, num_vars)
      
             for process in processes:
                 process.terminate()
@@ -112,6 +125,6 @@ if __name__ == '__main__':
             exit()
     
     if false_counter == len(seeds) * len(factored_instances):
-        print_solution(False)
+        print_solution(False, 0)
     else:
-        print_solution(None)
+        print_solution(None, 0)
