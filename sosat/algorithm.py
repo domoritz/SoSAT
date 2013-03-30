@@ -2,14 +2,24 @@ import numpy as np
 
 
 class Algorithm(object):
+    """
+    This is an abstract superclass for all algorithms.
+    """
+    # seed for random numbers
     SEED = 42
+    # display debug messages
     VERBOSE = False
+    # collect statistics
     COLLECT_STATS = False
+    # maximum number of iterations
     MAX_ITERATIONS = 25000
 
     profiles = {}
 
     def __init__(self, num_vars=0, clauses=[], config={}):
+        """
+        Initializes the algorithm with the instance and the configuration.
+        """
         self.num_vars = num_vars
         self.num_lits = 2 * num_vars
         self.raw_clauses = clauses
@@ -22,6 +32,9 @@ class Algorithm(object):
         self.initialize_clauses()
 
     def initialize_clauses(self):
+        """
+        Generates full clauses consisting of truth values for positive and negated variables.
+        """
         num_clauses = len(self.raw_clauses)
         shape = (num_clauses, 2, self.num_vars)
         clauses = np.zeros(dtype=np.bool, shape=shape)
@@ -34,10 +47,19 @@ class Algorithm(object):
         self.clauses = clauses
 
     def full_candidate(self, candidate):
+        """
+        Generate full solution candidate for solution candidate consisting of truth values for positive and negated variables.
+        """
         return np.array([candidate, ~candidate])
 
     def evaluate_full_candidate(self, full_candidate):
+        """
+        Evalaute a full solution candidate for every clause.
+        """
         return np.any(self.clauses & full_candidate, axis=(2, 1))
 
     def evaluate_candidate(self, candidate):
+        """
+        Evaluate a solution candidate for every clause.
+        """
         return self.evaluate_full_candidate(self.full_candidate(candidate))
