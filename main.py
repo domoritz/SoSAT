@@ -1,10 +1,26 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+"""
+SOSAT - Prove satisfiability for boolean formulas in CNF
+
+Algorithms: 
+    ant colony optimization, 
+    genetic algorithm, 
+    simulated annealing (as a means to generate an initial population)
+
+Authors: 
+    Dominik Moritz (dominik.moritz@student.hpi.uni-potsdam.de), 
+    Matthias Springer (matthias.springer@student.hpi.uni-potsdam.de)
+"""
+
 from __future__ import print_function
 
 import argparse
 import sys
 import multiprocessing
 from multiprocessing import Process, Queue
-import time
+import numpy as np
 
 import sosat.genetic.algorithm as ga
 import sosat.ant.algorithm as aa
@@ -15,12 +31,20 @@ VERBOSE = False
 
 
 class MyProcess(Process):
+    """
+    Container class for running multiple instances of an algorithm simultaneously.
+    """
+
     def run(self):
         Process.run(self)
 
 
 def print_solution(instance_solution, num_vars):
+    """
+    Print the solution. To retrieve the correct solution, preprocessing steps have to be undone.
+    """
     if instance_solution is False:
+        # unsatisfiability can only be determined during preprocessing
         sys.stdout.write("s UNSATISFIABLE\n")
     elif instance_solution is not None:
         instance, p_solution = instance_solution
@@ -36,6 +60,9 @@ def print_solution(instance_solution, num_vars):
 
 
 if __name__ == '__main__':
+    # entry point for the program
+    np.set_printoptions(linewidth=2000000000)
+
     clp = argparse.ArgumentParser(description='SAT solver.')
     clp.add_argument('-a', '--algorithm', dest='algo',
                      default='genetic', choices=['genetic', 'ant', 'other'],
@@ -58,43 +85,51 @@ if __name__ == '__main__':
     args = clp.parse_args()
     VERBOSE = args.verbose
 
-    num_vars, clauses = parser.parse(args.infile)
-    factored_instances = preprocessing.factored_instances(num_vars, clauses, min(args.f, num_vars))
+    def dprint(*args, **kwargs): 
+        if VERBOSE: 
+            __builtins__.print(*(['c'] + list(args)), **kwargs) 
 
-    if len([x for x in factored_instances if x is False]) == factored_instances:
-        # unsatisfiable
+    # parse input file
+    num_vars, clauses = parser.parse(args.infile)
+    # preprocess instance and generate factored instances
+    factored_instances = preprocessing.factored_instances(num_vars, clauses, min(args.f, num_vars))
+    # filter unsatisfiable factored instances (detected during preprocessing)
+    factored_instances = filter(lambda i: i is not False, factored_instances)
+    # find instances solved completely during preprocessing
+    solved_instances = filter(lambda i: len(i[1]) == 0, factored_instances)
+
+    if len(factored_instances) == 0:
+        # if all factored instances are unsatisfiable, then the instance is unsatisfiable
+        dprint("Proved unsatisfiable during preprocessing.")
         print_solution(False, 0)
+        exit()
+    elif len(solved_instances) > 0:
+        dprint("Solved during preprocessing.")
+        print_solution((solved_instances[0], []), num_vars)
         exit()
 
     if args.algo == 'genetic':
+        dprint("Selected genetic algorithm.")
         algo = ga.GeneticAlgorithm
     elif args.algo == 'ant':
+        dprint("Selected ant colony optimization.")
         algo = aa.AntColonyAlgorithm
     else:
-        print("No such algorithm.")
+        print("Argument error: No such algorithm.")
 
-    def dprint(*args, **kwargs):
-        if VERBOSE:
-            __builtins__.print(*args, **kwargs)
-
-    dprint("c Reduced instances:")
+    dprint("Reduced instances:")
 
     for i in factored_instances:
-        dprint("c", i, " / ", num_vars, "original variables")
+        dprint(i, " / ", num_vars, "original variables")
 
     def start(instance, config, queue):
-        dprint("c Start", config)
-
-        if len(instance[1]) == 0:
-            # found solution during preprocessing
-            queue.put((instance, []))
-            return
-
-        dprint("c Start one process with config", config)
+        dprint("Start", config)
+        dprint("Start one process with config", config)
 
         a = algo(instance[0], instance[1], config)
 
         solution = a.run()
+        dprint("Solution", str(solution))
         queue.put((instance, solution))
 
     processes = []
@@ -106,6 +141,7 @@ if __name__ == '__main__':
     # run profiles
     dprint("c Run {} profiles".format(len(algo.profiles)))
 
+    # run algorithm for every factored instance with every profile
     for profile in algo.profiles:
         config = {
             'VERBOSE': args.verbose,
@@ -129,8 +165,9 @@ if __name__ == '__main__':
             p.start()
             processes.append(p)
 
-    dprint("c Waiting for at most", len(seeds) * len(factored_instances), "results...")
+    dprint("Waiting for at most", len(processes), "results...")
 
+    # wait for the first process to finish with a solution
     for i in xrange(len(processes)):
         solution = queue.get()
         if solution is not None:
@@ -141,5 +178,6 @@ if __name__ == '__main__':
 
             exit()
 
-    # unknown
+    # maximum iterations reached, solution is unknown
     print_solution(None, 0)
+
