@@ -7,6 +7,8 @@ class Algorithm(object):
     COLLECT_STATS = False
     MAX_ITERATIONS = 25000
 
+    profiles = {}
+
     def __init__(self, num_vars=0, clauses=[], config={}):
         self.num_vars = num_vars
         self.num_lits = 2 * num_vars
