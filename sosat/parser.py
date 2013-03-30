@@ -1,6 +1,5 @@
 TESTING = True
 
-
 def parse(f):
     # Parser for DIMACS format
     num_vars = 0
@@ -14,3 +13,4 @@ def parse(f):
             else:
                 clauses.append(map(int, pline)[:-1])
     return num_vars, clauses
+

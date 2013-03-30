@@ -11,6 +11,7 @@ class AntColonyAlgorithm(algo.Algorithm):
     BLUR_BASIC = 0.9
     BLUR_DECLINE = 50.0
     WEIGHT_ADAPTION_DURATION = 250
+    EPSILON = 0.0000001
 
     def __init__(self, num_vars=0, clauses=[], config={}):
         # clause form: [-x1, x1, -x2, x2, -x3, x3, ...] (0/1)
@@ -60,7 +61,7 @@ class AntColonyAlgorithm(algo.Algorithm):
         self.probabilities = self.pheromones**self.EXP_PH * self.mcv**self.EXP_MCV
 
     def choose_nodes(self):
-        normalization_vector = np.sum(self.probabilities, axis=0) ** -1
+        normalization_vector = (np.sum(self.probabilities, axis=0) + self.EPSILON) ** -1
         chosen = np.random.rand(self.num_vars) < normalization_vector * self.probabilities[0]
         return chosen
 

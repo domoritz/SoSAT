@@ -1,29 +1,28 @@
 import argparse
 import sys
 import multiprocessing
-from multiprocessing import Process, Event, Queue
+from multiprocessing import Process, Queue
+import time
 
 import sosat.genetic.algorithm as ga
 import sosat.ant.algorithm as aa
 import sosat.parser as parser
-
+import sosat.preprocessing as preprocessing
 
 class MyProcess(Process):
-    def __init__(self, event, *args, **kwargs):
-        self.event = event
-        Process.__init__(self, *args, **kwargs)
-
     def run(self):
         Process.run(self)
-        self.event.set()
 
+def print_solution(instance_solution):
+    instance, p_solution = instance_solution
 
-def print_solution(solution):
-    if solution is not None:
+    if p_solution is not None:
+        solution = preprocessing.restore_original_solution(instance, p_solution)
+
         sol = []
         for i, lit in enumerate(solution):
-            sol.append(str(i if lit else -i))
-        sys.stdout.write("v " + ' '.join(sol) + '\n')
+            sol.append(str(i + 1 if lit else -i - 1))
+        sys.stdout.write("v " + ' '.join(sol) + ' 0\n')
         sys.stdout.write("s SATISFIABLE\n")
     else:
         sys.stdout.write("s UNKNOWN\n")
@@ -43,14 +42,24 @@ if __name__ == '__main__':
     clp.add_argument('-N', '--number', dest='N',
                      default=1, type=int,
                      help='number of processes')
+    clp.add_argument('-f', '--factor', dest='f',
+                     default=0, type=int, 
+                     help='number of factored (most-constrained) variables')
     clp.add_argument('infile', nargs='?', type=argparse.FileType('r'),
                      default=sys.stdin)
 
     args = clp.parse_args()
 
     num_vars, clauses = parser.parse(args.infile)
+    factored_instances = preprocessing.factored_instances(num_vars, clauses, args.f)
 
-    def start(seed, queue=None):
+    if args.verbose:
+        print "Reduced instances:"
+
+        for i in factored_instances:
+            print i[0], " / ", num_vars
+     
+    def start(instance, seed, queue):
         options = {
             'VERBOSE': args.verbose,
             'SEED': seed
@@ -60,39 +69,36 @@ if __name__ == '__main__':
             print "c Start one process with args", options
 
         if args.algo == 'genetic':
-            a = ga.GeneticAlgorithm(num_vars, clauses, options)
+            a = ga.GeneticAlgorithm(instance[0], instance[1], options)
         elif args.algo == 'ant':
-            a = aa.AntColonyAlgorithm(num_vars, clauses, options)
+            a = aa.AntColonyAlgorithm(instance[0], instance[1], options)
         else:
             print "No such algorithm."
-        if queue:
-            queue.put(a.run())
-        else:
-            print_solution(a.run())
 
-    if args.N == 1:
-        start(args.seed)
-        exit()
+        solution = a.run()
+        queue.put((instance, solution))
 
     processes = []
     queue = Queue()
-    event = Event()
 
     if not args.N:
         args.N = multiprocessing.cpu_count()
-
+ 
     seeds = range(args.seed, args.seed + args.N)
     for seed in seeds:
-        p = MyProcess(event, target=start, args=(seed, queue))
-        p.start()
-        processes.append(p)
+        for instance in factored_instances:
+            p = MyProcess(target=start, args=(instance, seed, queue))
+            p.start()
+            processes.append(p)
 
-    event.wait()
-
-    for process in processes:
-        process.terminate()
-    for process in processes:
-        process.join()
-
-    print_solution(queue.get())
-    exit()
+    for i in xrange(len(seeds) * len(factored_instances)):
+        solution = queue.get()
+        if solution is not None:
+            print_solution(solution)
+     
+            for process in processes:
+                process.terminate()
+    
+            exit()
+    
+    print_solution(None)

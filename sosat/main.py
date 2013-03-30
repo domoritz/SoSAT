@@ -43,12 +43,16 @@ if __name__ == '__main__':
     clp.add_argument('-N', '--number', dest='N',
                      default=1, type=int,
                      help='number of processes')
+    clp.add_argument('-f', '--factor', dest='f',
+                     default=1,
+                     help='number of factored (most-constrained) variables')
     clp.add_argument('infile', nargs='?', type=argparse.FileType('r'),
                      default=sys.stdin)
 
     args = clp.parse_args()
 
     num_vars, clauses = parser.parse(args.infile)
+    print clauses
 
     def start(seed, queue=None):
         options = {
