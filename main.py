@@ -21,6 +21,7 @@ import sys
 import multiprocessing
 from multiprocessing import Process, Queue
 import numpy as np
+import random
 
 import sosat.genetic.algorithm as ga
 import sosat.ant.algorithm as aa
@@ -29,6 +30,9 @@ import sosat.preprocessing as preprocessing
 
 VERBOSE = False
 
+def dprint(*args, **kwargs):
+    if VERBOSE:
+        __builtins__.print(*(['c'] + list(args)), **kwargs)
 
 class MyProcess(Process):
     """
@@ -84,11 +88,11 @@ def main():
 
     args = clp.parse_args()
     VERBOSE = args.verbose
-
+   
     def dprint(*args, **kwargs):
         if VERBOSE:
             __builtins__.print(*(['c'] + list(args)), **kwargs)
-
+                     
     # parse input file
     num_vars, clauses = parser.parse(args.infile)
     # preprocess instance and generate factored instances
@@ -97,7 +101,9 @@ def main():
     factored_instances = filter(lambda i: i is not False, factored_instances)
     # find instances solved completely during preprocessing
     solved_instances = filter(lambda i: len(i[1]) == 0, factored_instances)
-
+    # initialize Python random with seed (not used during computation, only for choosing next configuration)
+    random.seed(args.seed)
+    
     if len(factored_instances) == 0:
         # if all factored instances are unsatisfiable, then the instance is unsatisfiable
         dprint("Proved unsatisfiable during preprocessing.")
@@ -122,64 +128,67 @@ def main():
     for i in factored_instances:
         dprint(i, " / ", num_vars, "original variables")
 
-    def start(instance, config, queue):
-        dprint("Start", config)
-        dprint("Start one process with config", config)
-
-        a = algo(instance[0], instance[1], config)
-
-        solution = a.run()
-        dprint("Solution", str(solution))
-        queue.put((instance, solution))
-
     processes = []
     queue = Queue()
+    MAX_ITERATIONS = 25000
 
     if not args.N:
         args.N = multiprocessing.cpu_count()
 
     # run profiles
-    dprint("Run {} profiles".format(len(algo.profiles)))
+    dprint("Run {} processes (N = {}, {} factored instances)".format(max(args.N, len(factored_instances)) ,args.N, len(factored_instances)))
 
     # run algorithm for every factored instance with every profile
-    for profile in algo.profiles:
-        config = {
-            'VERBOSE': args.verbose,
-            'SEED': args.seed
-        }
-        config.update(profile)
-        for instance in factored_instances:
-            p = MyProcess(target=start, args=(instance, config, queue))
-            p.start()
-            processes.append(p)
+    for instance in factored_instances:
+        profile = algo.profiles[0]
+        start_process(algo, instance, profile, args.seed, MAX_ITERATIONS, queue, args.verbose, processes)
 
-    # run default config with seed
-    seeds = range(args.seed, args.seed + args.N - max(0, len(algo.profiles)))
-    for seed in seeds:
-        config = {
-            'VERBOSE': args.verbose,
-            'SEED': seed + len(algo.profiles)
-        }
-        for instance in factored_instances:
-            p = MyProcess(target=start, args=(instance, config, queue))
-            p.start()
-            processes.append(p)
-
-    dprint("Waiting for at most", len(processes), "results...")
+    for i in range(args.N - len(factored_instances)):
+        profile = random.choice(algo.profiles)
+        instance = random.choice(factored_instances)
+        start_process(algo, instance, profile, random.randint(1, 10000), MAX_ITERATIONS, queue, VERBOSE, processes)
 
     # wait for the first process to finish with a solution
-    for i in xrange(len(processes)):
+    while True:
         solution = queue.get()
-        if solution is not None:
-            print_solution(solution, num_vars)
+        
+        for instance in factored_instances:
+            MAX_ITERATIONS = int(MAX_ITERATIONS * 1.75)
 
-            for process in processes:
-                process.terminate()
+            if solution[1] is not None:
+                print_solution(solution, num_vars)
 
-            exit()
+                for process in processes:
+                    process.terminate()
 
-    # maximum iterations reached, solution is unknown
-    print_solution(None, 0)
+                exit()
+
+            else:
+                # start another thread with more iterations and different configuration
+                profile = random.choice(algo.profiles)
+                start_process(algo, instance, profile, random.randint(1, 10000), MAX_ITERATIONS, queue, VERBOSE, processes)
+
+def algorithm_start(instance, config, queue, algo):
+    dprint("Start", config)
+    dprint("Start one process with config", config)
+
+    a = algo(instance[0], instance[1], config)
+
+    solution = a.run()
+    dprint("Solution", str(solution))
+    queue.put((instance, solution))
+
+
+def start_process(algo, instance, profile, seed, iterations, queue, verbose, processes):
+    config = {
+        'VERBOSE': verbose,
+        'SEED': seed,
+        'MAX_ITERATIONS': iterations
+    }
+    config.update(profile)
+    p = MyProcess(target=algorithm_start, args=(instance, config, queue, algo))
+    p.start()
+    processes.append(p)
 
 if __name__ == '__main__':
     main()
