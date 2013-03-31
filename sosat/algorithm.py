@@ -20,8 +20,8 @@ class Algorithm(object):
         """
         Initializes the algorithm with the instance and the configuration.
         """
-        self.num_vars = num_vars
-        self.num_lits = 2 * num_vars
+        self.num_vars = np.int_(num_vars)
+        self.num_lits = np.int_(2 * num_vars)
         self.raw_clauses = clauses
         self.num_clauses = len(clauses)
 
