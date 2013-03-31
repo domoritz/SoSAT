@@ -4,13 +4,13 @@
 """
 SOSAT - Prove satisfiability for boolean formulas in CNF
 
-Algorithms: 
-    ant colony optimization, 
-    genetic algorithm, 
+Algorithms:
+    ant colony optimization,
+    genetic algorithm,
     simulated annealing (as a means to generate an initial population)
 
-Authors: 
-    Dominik Moritz (dominik.moritz@student.hpi.uni-potsdam.de), 
+Authors:
+    Dominik Moritz (dominik.moritz@student.hpi.uni-potsdam.de),
     Matthias Springer (matthias.springer@student.hpi.uni-potsdam.de)
 """
 
@@ -59,7 +59,7 @@ def print_solution(instance_solution, num_vars):
         sys.stdout.write("s UNKNOWN\n")
 
 
-if __name__ == '__main__':
+def main():
     # entry point for the program
     np.set_printoptions(linewidth=2000000000)
 
@@ -85,9 +85,9 @@ if __name__ == '__main__':
     args = clp.parse_args()
     VERBOSE = args.verbose
 
-    def dprint(*args, **kwargs): 
-        if VERBOSE: 
-            __builtins__.print(*(['c'] + list(args)), **kwargs) 
+    def dprint(*args, **kwargs):
+        if VERBOSE:
+            __builtins__.print(*(['c'] + list(args)), **kwargs)
 
     # parse input file
     num_vars, clauses = parser.parse(args.infile)
@@ -181,3 +181,5 @@ if __name__ == '__main__':
     # maximum iterations reached, solution is unknown
     print_solution(None, 0)
 
+if __name__ == '__main__':
+    main()

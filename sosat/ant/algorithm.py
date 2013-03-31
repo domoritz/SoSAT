@@ -120,4 +120,3 @@ class AntColonyAlgorithm(algo.Algorithm):
 
             if i > 0 and i % self.BLUR_ITERATIONS == 0:
                 self.blur_pheromones(self.BLUR_BASIC * np.e**(-i/self.BLUR_DECLINE))
-
