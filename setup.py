@@ -14,7 +14,7 @@ setup(
     install_requires=[
         'nose',
         'numpy>=1.7',
-        'mathplotlib'
+        'bottleneck'
     ],
     entry_points={
         'console_scripts': [
