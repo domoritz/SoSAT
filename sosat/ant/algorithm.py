@@ -24,10 +24,47 @@ class AntColonyAlgorithm(algo.Algorithm):
     # blurring decline factor, range: [1, inf)
     BLUR_DECLINE = np.float_(50.0)
     # weight adaption heuristic interval (number of evaluations), range: [1, inf)
-    WEIGHT_ADAPTION_DURATION = 250
+    WEIGHT_ADAPTION_DURATION = 250 
     # small epsilon to avoid division by zero
-    EPSILON = np.float(0.0000001)
-
+    EPSILON = np.float_(0.0000001)
+    
+    profiles = [
+        # first profile is default profile
+        {
+            'NUM_ANTS': 250,
+            'EXP_PH': np.float_(1),
+            'EXP_MCV': np.float_(0.5),
+            'PH_REDUCE_FACTOR': np.float_(0.15),
+            'BLUR_ITERATIONS': 3,
+            'BLUR_BASIC': np.float_(0.9),
+            'BLUR_DECLINE': np.float_(50.0),
+            'WEIGHT_ADAPTION_DURATION': 250,
+            'EPSILON': np.float_(0.0000001)
+        },
+        {
+            'NUM_ANTS': 25,
+            'EXP_PH': np.float_(1),
+            'EXP_MCV': np.float_(1.5),
+            'PH_REDUCE_FACTOR': np.float_(0.35),
+            'BLUR_ITERATIONS': 5,
+            'BLUR_BASIC': np.float_(0.95),
+            'BLUR_DECLINE': np.float_(30.0),
+            'WEIGHT_ADAPTION_DURATION': 170,
+            'EPSILON': np.float_(0.0000001)
+        },
+        {
+            'NUM_ANTS': 10,
+            'EXP_PH': np.float_(1),
+            'EXP_MCV': np.float_(0.20),
+            'PH_REDUCE_FACTOR': np.float_(0.15),
+            'BLUR_ITERATIONS': 3,
+            'BLUR_BASIC': np.float_(0.5),
+            'BLUR_DECLINE': np.float(5.0),
+            'WEIGHT_ADAPTION_DURATION': 5,
+            'EPSILON': np.float_(0.0001)
+        }
+    ]
+    
     def __init__(self, num_vars=0, clauses=[], config={}):
         """
         Initialize the algorithm.
