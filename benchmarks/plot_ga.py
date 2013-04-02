@@ -7,12 +7,15 @@ import numpy as np
 
 def run():
     algo = ga.GeneticAlgorithm
-    f = open('instances/random_ksat12.dimacs')
+    f = open('instances/random_ksat13.dimacs')
     num_vars, clauses = parser.parse(f)
 
     conf = {
         'COLLECT_STATS': True,
-        'MAX_ITERATIONS': 600
+        'MAX_ITERATIONS': 1500,
+        'MUTATION_RATE': 0.5,
+        'CATASTROPHY_THRESHOLD': 2.3,
+        'CATASTROPHES': True
     }
 
     a = algo(num_vars, clauses, conf)

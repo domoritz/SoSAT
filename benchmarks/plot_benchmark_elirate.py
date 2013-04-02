@@ -99,7 +99,7 @@ def plot(results):
     plt.legend()
 
     from matplotlib.backends.backend_pdf import PdfPages
-    pp = PdfPages('plots/ga_elirate_ksat13.pdf')
+    pp = PdfPages('plots/{}.pdf'.format(NAME))
     plt.savefig(pp, format='pdf')
     pp.close()
 
