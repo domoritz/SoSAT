@@ -1,0 +1,1 @@
+sosat --help

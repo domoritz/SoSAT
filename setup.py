@@ -1,7 +1,7 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
-    name='SoSAT',
+    name='sosat',
     version='0.0.1',
     author='Matthias Springer, Dominik Moritz',
     author_email='matthias.springer@student.hpi.uni-potsdam.de, dominik.moritz@student.hpi.uni-potsdam.de',
