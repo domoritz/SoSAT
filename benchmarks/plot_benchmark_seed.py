@@ -5,6 +5,7 @@ import numpy as np
 from contextlib import contextmanager
 
 import sosat.genetic.algorithm as ga
+import sosant.ant.algorithm as aa
 import sosat.parser as parser
 
 import matplotlib.pyplot as plt
@@ -25,13 +26,13 @@ def time_limit(seconds):
     finally:
         signal.alarm(0)
 
-SAMPLES = 20
-NAME = 'ga_seed_ksat13'
+SAMPLES = 50
+NAME = 'ga_seed_ksat11'
 
 
 def run():
-    algo = ga.GeneticAlgorithm
-    filenames = ['instances/random_ksat13.dimacs']
+    algo = aa.AntColonyAlgorithm
+    filenames = ['instances/random_ksat11.dimacs']
     files = [open(x) for x in filenames]
 
     results = {}
