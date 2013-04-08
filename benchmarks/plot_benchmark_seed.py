@@ -25,7 +25,7 @@ def time_limit(seconds):
     finally:
         signal.alarm(0)
 
-SAMPLES = 5
+SAMPLES = 20
 NAME = 'ga_seed_ksat13'
 
 
@@ -48,8 +48,8 @@ def run():
 
         start = time.time()
         try:
-            # tmeout in seconds
-            with time_limit(10):
+            # timeout in seconds
+            with time_limit(20):
                 a.run()
         except TimeoutException, msg:
             print msg
