@@ -46,7 +46,7 @@ class GeneticAlgorithm(algo.Algorithm):
     CATASTROPHES = False
     # Catastropy if std below this value
     CATASTROPHY_THRESHOLD = 2.3
-    # [not before x iterations, At least evey x iterations]
+    # [not before x iterations, at least every x iterations]
     CATASTROPHY_BOUNDS = [100, 800]
 
     profiles = [

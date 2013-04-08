@@ -7,8 +7,8 @@ import numpy as np
 
 def run():
     algo = ga.GeneticAlgorithm
-    f = open('instances/random_ksat13.dimacs')
-    num_vars, clauses = parser.parse(f)
+    fi = open('instances/random_ksat13.dimacs')
+    num_vars, clauses = parser.parse(fi)
 
     conf = {
         'COLLECT_STATS': True,
@@ -21,7 +21,9 @@ def run():
     a = algo(num_vars, clauses, conf)
     a.run()
 
-    f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
+    # subplots where the first one is twice as large
+    ax1 = plt.subplot2grid((3, 1), (0, 0), rowspan=2)
+    ax2 = plt.subplot2grid((3, 1), (2, 0))
 
     xs = []
     ys = []
@@ -39,7 +41,7 @@ def run():
 
     #'''
     h = ax1.hist2d(xs, ys, bins=(x_range, y_range), norm=LogNorm())
-    f.subplots_adjust(right=0.8)
+    #f.subplots_adjust(right=0.8)
     #f.colorbar(h[3], ax=ax1)
     #'''
     '''
@@ -76,18 +78,23 @@ def run():
     data = np.array([x['mr'] for x in a.progress])
     xs = range(len(data))
     ys = data
-    ax3.plot(xs, ys, 'g-', label='Mutation rate')
+    #ax3.plot(xs, ys, 'g-', label='Mutation rate')
 
     # Styling
-    f.subplots_adjust(hspace=0)
+
+    # no space between plots
+    plt.subplots_adjust(hspace=0)
+    ax1.set_xticklabels([])
+
     plt.xlabel('Iteration')
     ax1.set_ylabel('Satisfied clauses')
     ax2.set_ylabel('Value')
     ax1.set_title('Genetic Algorithm - Performance')
     ax1.grid(True, which="both", linestyle="dotted")
-    ax1.legend()
-    ax2.legend()
-    ax3.legend()
+    ax1.legend(loc='lower right')
+    ax2.legend(loc='lower right')
+
+    #plt.set_size_inches(12, 8)
 
     from matplotlib.backends.backend_pdf import PdfPages
     pp = PdfPages('plots/ga_performance_ksat13.pdf')
