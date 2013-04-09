@@ -134,8 +134,8 @@ class GeneticAlgorithm(algo.Algorithm):
             print i, chromosome, self.fitnesses[i]
         print max(self.fitnesses), 'of', self.num_clauses
 
-    def force_missing(self, no_elites):
-        # replaces first in no_elites
+    def force_missing(self):
+        no_elites = self.get_non_elites(self.NUM_FORCED)
         elites = self.get_elites(self.NUM_FORCED)
         for i, elite in enumerate(elites):
             elite_chromosome = self.pop[elite].copy()
@@ -244,7 +244,7 @@ class GeneticAlgorithm(algo.Algorithm):
                 return best
 
             if self.NUM_FORCED:
-                self.force_missing(no_elites)
+                self.force_missing()
             if self.NUM_NEW_RANDOM:
                 self.add_random(no_elites)
 
