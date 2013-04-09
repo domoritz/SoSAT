@@ -102,14 +102,15 @@ def plot(results):
     plt.subplots_adjust(hspace=0)
     ax1.set_xticklabels([])
 
-    plt.xlim([0.1, 0.9])
+    ax1.set_xlim([0.1, 0.9])
+    ax2.set_xlim([0.1, 0.9])
     plt.xlabel('rate')
     ax1.grid(True, which="both", linestyle="dotted")
     ax2.grid(True, which="both", linestyle="dotted")
     ax1.legend(loc='upper right')
     #ax2.legend(loc='upper right')
 
-    ax1.set_ylabel('standard derivative')
+    ax1.set_ylabel('standard deviation')
     ax2.set_ylabel('average')
 
     from matplotlib.backends.backend_pdf import PdfPages
@@ -130,7 +131,7 @@ def load():
         return json.load(fp)
 
 if __name__ == '__main__':
-    #'''
+    '''
     results = run()
     save(results)
     '''

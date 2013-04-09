@@ -72,7 +72,7 @@ def run():
     data = np.array([x['values'] for x in a.progress])
     xs = range(len(data))
     ys = np.std(data, axis=1)
-    ax2.plot(xs, ys, 'b-', label='standard derivative')
+    ax2.plot(xs, ys, 'b-', label='standard deviation')
 
     # mr
     data = np.array([x['mr'] for x in a.progress])
@@ -88,7 +88,7 @@ def run():
 
     plt.xlabel('iteration')
     ax1.set_ylabel('# of satisfied clauses')
-    ax2.set_ylabel('standard derivative')
+    ax2.set_ylabel('standard deviation')
     ax1.grid(True, which="both", linestyle="dotted")
     ax1.legend(loc='lower right')
     #ax2.legend(loc='lower right')
