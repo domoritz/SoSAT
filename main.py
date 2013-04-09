@@ -103,7 +103,9 @@ def main():
     solved_instances = filter(lambda i: len(i[1]) == 0, factored_instances)
     # initialize Python random with seed (not used during computation, only for choosing next configuration)
     random.seed(args.seed)
-    
+   
+    dprint("Running with", len(factored_instances), "factored instances (removed unsolvable).")
+     
     if len(factored_instances) == 0:
         # if all factored instances are unsatisfiable, then the instance is unsatisfiable
         dprint("Proved unsatisfiable during preprocessing.")
@@ -150,9 +152,9 @@ def main():
 
     # wait for the first process to finish with a solution
     while True:
-        solution = queue.get()
-        
         for instance in factored_instances:
+            solution = queue.get()
+
             MAX_ITERATIONS = int(MAX_ITERATIONS * 1.75)
 
             if solution[1] is not None:

@@ -31,6 +31,17 @@ class AntColonyAlgorithm(algo.Algorithm):
     profiles = [
         # first profile is default profile
         {
+            'NUM_ANTS': 25,
+            'EXP_PH': np.float_(1),
+            'EXP_MCV': np.float_(0.1),
+            'PH_REDUCE_FACTOR': np.float_(0.5),
+            'BLUR_ITERATIONS': 1,
+            'BLUR_BASIC': np.float_(0.2),
+            'BLUR_DECLINE': np.float_(50.0),
+            'WEIGHT_ADAPTION_DURATION': 250,
+            'EPSILON': np.float_(0.0000001)
+        },
+        {
             'NUM_ANTS': 250,
             'EXP_PH': np.float_(1),
             'EXP_MCV': np.float_(0.5),
