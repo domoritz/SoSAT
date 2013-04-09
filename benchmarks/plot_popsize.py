@@ -53,7 +53,7 @@ def run():
 
             start = time.time()
             try:
-                # tmeout in seconds
+                # timeout in seconds
                 with time_limit(TIMEOUT):
                     a.run()
             except TimeoutException, msg:
@@ -97,13 +97,12 @@ def plot(results):
     avgs = [results[x]['avg'] for x in xs]
     mins = [results[x]['min'] for x in xs]
 
-    plt.plot(xs, avgs, 'ro--', label="Average")
-    plt.plot(xs, mins, 'go--', label="Minimum")
+    plt.plot(xs, avgs, 'ro--', label="average")
+    plt.plot(xs, mins, 'go--', label="minimum")
 
     # Styling
-    plt.xlabel('Population size')
-    plt.ylabel('Seconds')
-    plt.title('Genetic Algorithm - Population sizes')
+    plt.xlabel('population size')
+    plt.ylabel('seconds')
     plt.grid(True, which="both", linestyle="dotted")
     plt.legend()
 

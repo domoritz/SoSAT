@@ -1,10 +1,10 @@
 import time
 import signal
 import json
+import numpy as np
 from contextlib import contextmanager
 
 import sosat.genetic.algorithm as ga
-import sosat.ant.algorithm as aa
 import sosat.parser as parser
 
 import matplotlib.pyplot as plt
@@ -25,8 +25,8 @@ def time_limit(seconds):
     finally:
         signal.alarm(0)
 
-
-NAME = 'ga_elirate_ksat13'
+SAMPLES = 20
+NAME = 'ga_seed_ksat13'
 
 
 def run():
@@ -39,62 +39,43 @@ def run():
     f = files[0]
     num_vars, clauses = parser.parse(f)
 
-    data = [float(x) / 100 for x in range(0, 50, 2)]
-    for i, erate in enumerate(data):
-        print i, 'of', len(data)
-        times = []
-        for seed in range(5):
-            conf = {
-                'ELIRATE': erate,
-                'SEED': 42 + seed
-            }
-            a = algo(num_vars, clauses, conf)
-
-            start = time.time()
-            try:
-                # tmeout in seconds
-                with time_limit(5):
-                    a.run()
-            except TimeoutException, msg:
-                print msg
-            else:
-                elapsed = time.time() - start
-                times.append(elapsed)
-
-        results[erate] = {
-            'no_to': len(times),
-            'avg': sum(times) / len(times),
-            'min': min(times),
-            'values': times
+    for i, seed in enumerate(np.arange(SAMPLES) + 42):
+        print i, 'of', SAMPLES
+        conf = {
+            'SEED': seed
         }
+        a = algo(num_vars, clauses, conf)
+
+        start = time.time()
+        try:
+            # timeout in seconds
+            with time_limit(20):
+                a.run()
+        except TimeoutException, msg:
+            print msg
+        elapsed = time.time() - start
+
+        results[seed] = elapsed
     return results
 
 
 def plot(results):
 
-    xs = []
-    ys = []
-    maxy = 0
-    for k in results.keys():
-        for v in results[k]['values']:
-            xs.append(k)
-            ys.append(v)
-        maxy = max([maxy, results[k]['avg']])
+    xs = np.array(results.keys())
+    xs.sort()
+    ys = np.array([results[k] for k in xs])
+    maxy = max(results.values())
     #plt.plot(xs, ys, 'bo', alpha=0.5)
     plt.ylim([0, maxy * 1.1])
 
-    xs = results.keys()
-    xs.sort()
-    avgs = [results[x]['avg'] for x in xs]
-    mins = [results[x]['min'] for x in xs]
-
-    plt.plot(xs, avgs, 'ro--', label="Average")
-    plt.plot(xs, mins, 'go--', label="Minimum")
+    #plt.plot(xs, ys, 'ro--', label="Time")
+    plt.bar(range(SAMPLES), ys, color='r', align='center')
+    plt.xticks(range(SAMPLES), xs)
 
     # Styling
-    plt.xlabel('Elite rate')
-    plt.ylabel('Seconds')
-    plt.title('Genetic Algorithm - Elite rates')
+    plt.xlabel('seed')
+    plt.ylabel('seconds')
+    plt.title('Genetic Algorithm - Seeds')
     plt.grid(True, which="both", linestyle="dotted")
     plt.legend()
 

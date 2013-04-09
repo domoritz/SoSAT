@@ -59,20 +59,20 @@ def run():
     #plt.ylim([0, np.max(data)])
     plt.xlim([0, len(data)])
     #plt.semilogy(xs, ys, 'bo-', label='Performance')
-    ax1.plot(xs, ys, 'ro-', label='Best performance')
+    ax1.plot(xs, ys, 'ro-', label='best performance')
 
     # average
     data = np.array([x['values'] for x in a.progress])
     xs = range(len(data))
     ys = np.average(data, axis=1)
     plt.xlim([0, len(data)])
-    ax1.plot(xs, ys, 'go-', label='Average performance')
+    ax1.plot(xs, ys, 'go-', label='average performance')
 
     # std
     data = np.array([x['values'] for x in a.progress])
     xs = range(len(data))
     ys = np.std(data, axis=1)
-    ax2.plot(xs, ys, 'b-', label='Standard derivative')
+    ax2.plot(xs, ys, 'b-', label='standard derivative')
 
     # mr
     data = np.array([x['mr'] for x in a.progress])
@@ -86,13 +86,12 @@ def run():
     plt.subplots_adjust(hspace=0)
     ax1.set_xticklabels([])
 
-    plt.xlabel('Iteration')
-    ax1.set_ylabel('Satisfied clauses')
-    ax2.set_ylabel('Value')
-    ax1.set_title('Genetic Algorithm - Performance')
+    plt.xlabel('iteration')
+    ax1.set_ylabel('# of satisfied clauses')
+    ax2.set_ylabel('standard derivative')
     ax1.grid(True, which="both", linestyle="dotted")
     ax1.legend(loc='lower right')
-    ax2.legend(loc='lower right')
+    #ax2.legend(loc='lower right')
 
     #plt.set_size_inches(12, 8)
 
