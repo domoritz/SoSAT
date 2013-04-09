@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 """
 SOSAT - Prove satisfiability for boolean formulas in CNF
 
@@ -13,7 +12,6 @@ Authors:
     Dominik Moritz (dominik.moritz@student.hpi.uni-potsdam.de),
     Matthias Springer (matthias.springer@student.hpi.uni-potsdam.de)
 """
-
 from __future__ import print_function
 
 import argparse
@@ -30,9 +28,11 @@ import sosat.preprocessing as preprocessing
 
 VERBOSE = False
 
+
 def dprint(*args, **kwargs):
     if VERBOSE:
         __builtins__.print(*(['c'] + list(args)), **kwargs)
+
 
 class MyProcess(Process):
     """
@@ -64,6 +64,8 @@ def print_solution(instance_solution, num_vars):
 
 
 def main():
+    global VERBOSE
+
     # entry point for the program
     np.set_printoptions(linewidth=2000000000)
 
@@ -88,11 +90,7 @@ def main():
 
     args = clp.parse_args()
     VERBOSE = args.verbose
-   
-    def dprint(*args, **kwargs):
-        if VERBOSE:
-            __builtins__.print(*(['c'] + list(args)), **kwargs)
-                     
+
     # parse input file
     num_vars, clauses = parser.parse(args.infile)
     # preprocess instance and generate factored instances
@@ -152,6 +150,8 @@ def main():
 
     # wait for the first process to finish with a solution
     while True:
+        solution = queue.get()
+
         for instance in factored_instances:
             solution = queue.get()
 
@@ -169,6 +169,7 @@ def main():
                 # start another thread with more iterations and different configuration
                 profile = random.choice(algo.profiles)
                 start_process(algo, instance, profile, random.randint(1, 10000), MAX_ITERATIONS, queue, VERBOSE, processes)
+
 
 def algorithm_start(instance, config, queue, algo):
     dprint("Start", config)
