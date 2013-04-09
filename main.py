@@ -150,8 +150,6 @@ def main():
 
     # wait for the first process to finish with a solution
     while True:
-        solution = queue.get()
-
         for instance in factored_instances:
             solution = queue.get()
 
