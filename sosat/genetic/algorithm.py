@@ -43,7 +43,9 @@ class GeneticAlgorithm(algo.Algorithm):
 
     # Enable or disable distasters that destroy parts of the population
     # you should decrease the mutation rate (i.e. to 0.5), if you enable this
-    CATASTROPHES = False
+    CATASTROPHES = True
+    # Type 1: replace non_elites, 2: replace duplicates
+    CATASTROPHE_TYPE = 2
     # Catastrope if std below this value
     CATASTROPHE_THRESHOLD = 2.3
     # [not before x iterations, at least every x iterations]
@@ -180,16 +182,27 @@ class GeneticAlgorithm(algo.Algorithm):
             self.MUTATION_RATE = max([self.MUTATION_RATE - diff, 0.2])
 
     def catastrophe(self, iteration):
-        if self.VERBOSE:
+        if self.VERBOSE or True:
             print 'c', 'Catastrophe', np.std(self.fitnesses)
         self.last_catastrophe = iteration
-        no_elites = self.get_non_elites(self.NUM_SELECTED)
-        shape = (len(no_elites), self.num_vars)
+        if self.CATASTROPHE_TYPE == 1:
+            to_replace = self.get_non_elites(self.NUM_SELECTED)
+        elif self.CATASTROPHE_TYPE == 2:
+            #_, ind = np.unique(self.pop, return_index=True)
+            #to_replace = np.delete(np.arange(self.NUM_CHROMOSOMES), ind)
+            to_replace = []
+            for i, x in enumerate(self.pop):
+                if x in self.pop[i + 1:]:
+                    to_replace.append(i)
+            print to_replace
+        else:
+            raise ValueError('CATASTROPHE_TYPE not defined')
+        shape = (len(to_replace), self.num_vars)
         random = np.random.choice([True, False], shape)
-        random_fitnesses = np.zeros(len(no_elites), dtype=np.int)
+        random_fitnesses = np.zeros(len(to_replace), dtype=np.int)
         self.evaluate_fitnesses(random, random_fitnesses)
-        self.pop[no_elites] = random
-        self.fitnesses[no_elites] = random_fitnesses
+        self.pop[to_replace] = random
+        self.fitnesses[to_replace] = random_fitnesses
 
     def catastrophe_if_necessary(self, iteration, std=0):
         diff = iteration - self.last_catastrophe
