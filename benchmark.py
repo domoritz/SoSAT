@@ -24,7 +24,7 @@ parameters = {
         'EPSILON': [0.0000001],
         'SEED': [42],
         'MAX_ITERATIONS': [25000]
-    }       
+    }
 }
 
 '''
@@ -32,16 +32,18 @@ parameters = {
     'algo': ga.GeneticAlgorithm,
     'files': ['instances/random_ksat13.dimacs'],
     'params': {
-        'ELIRATE': [0.1, 0.2, 0.3, 0.4],
+        'ELITES_RATE': [0.1, 0.2, 0.3, 0.4],
         'NUM_FOR_FORCE': [0, 1, 2],
-        'SELRATE': [0.2]
+        'SELECTION_RATE': [0.2]
     }
 }
 '''
 
+
 class MyProcess(Process):
     def run(self):
         Process.run(self)
+
 
 def run():
     algo = parameters['algo']
@@ -61,15 +63,15 @@ def run():
                 config[k] = values[i]
             configs.append(config)
     for f in files:
-        for conf in configs:        
+        for conf in configs:
             config = {'FILENAME': f.name}
             config.update(conf)
 
             f.seek(0)
             num_vars, clauses = parser.parse(f)
-            
+
             p = MyProcess(target=run_algorithm, args=(algo, num_vars, clauses, config, semaphore))
-            
+
             semaphore.acquire()
             p.start()
 
@@ -82,6 +84,6 @@ def run_algorithm(algo, num_vars, clauses, config, semaphore):
     config.update({'TIME': elapsed, 'SOLVED_SUCCESSFULLY': result is not None})
     print config
     semaphore.release()
-    
+
 if __name__ == '__main__':
     run()

@@ -39,7 +39,7 @@ def run():
 
     in_data = {
         'MUTATION_RATE': [float(x) / 20 for x in range(1, 18)],
-        'SELRATE': [float(x) / 40 for x in range(1, 20)]
+        'SELECTION_RATE': [float(x) / 40 for x in range(1, 20)]
     }
 
     for parameter in in_data.keys():
@@ -53,14 +53,14 @@ def run():
                 conf = {
                     parameter: value,
                     'SEED': 42 + seed,
-                    'ELIRATE': 0
+                    'ELITES_RATE': 0
                 }
                 a = algo(num_vars, clauses, conf)
 
                 start = time.time()
                 try:
                     # timeout in seconds
-                    with time_limit(20):
+                    with time_limit(30):
                         a.run()
                 except TimeoutException, msg:
                     print msg
@@ -88,7 +88,7 @@ def plot(results):
     ax1.plot(xs, mr_stds, 'go--', label="variable mutation rate")
     ax2.plot(xs, mr_avgs, 'go--', label="variable mutation rate")
 
-    d = results['SELRATE']
+    d = results['SELECTION_RATE']
     xs = sorted(d.keys())
     sr_avgs = [d[x]['avg'] for x in xs]
     sr_stds = [d[x]['std'] for x in xs]
@@ -131,7 +131,7 @@ def load():
         return json.load(fp)
 
 if __name__ == '__main__':
-    '''
+    #'''
     results = run()
     save(results)
     '''

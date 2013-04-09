@@ -26,7 +26,7 @@ def time_limit(seconds):
         signal.alarm(0)
 
 
-NAME = 'ga_elirate_ksat13'
+NAME = 'ga_ELITES_RATE_ksat13'
 
 
 def run():
@@ -45,7 +45,7 @@ def run():
         times = []
         for seed in range(5):
             conf = {
-                'ELIRATE': erate,
+                'ELITES_RATE': erate,
                 'SEED': 42 + seed
             }
             a = algo(num_vars, clauses, conf)

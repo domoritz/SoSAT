@@ -14,7 +14,7 @@ def run():
         'COLLECT_STATS': True,
         'MAX_ITERATIONS': 1500,
         'MUTATION_RATE': 0.5,
-        'CATASTROPHY_THRESHOLD': 2.3,
+        'CATASTROPHE_THRESHOLD': 2.3,
         'CATASTROPHES': True
     }
 

@@ -9,18 +9,18 @@ class GeneticAlgorithm(algo.Algorithm):
     NUM_CHROMOSOMES = 200
 
     # Relative number of elites
-    ELIRATE = 0.10
+    ELITES_RATE = 0.10
 
     # Relative number of individuals selected for
     # breeding offspring.
-    SELRATE = 0.25
+    SELECTION_RATE = 0.2
 
     # Probability for mutation of offspring
     # if mutation rate is dynamic, this is the initial rate
-    MUTATION_RATE = 0.7
+    MUTATION_RATE = 0.4
 
     # Number of individuals where false clauses are forced true
-    NUM_FORCED = 1
+    NUM_FORCED = 2
 
     # Number of random individuals that are generated as offspring
     NUM_NEW_RANDOM = 0
@@ -44,10 +44,10 @@ class GeneticAlgorithm(algo.Algorithm):
     # Enable or disable distasters that destroy parts of the population
     # you should decrease the mutation rate (i.e. to 0.5), if you enable this
     CATASTROPHES = False
-    # Catastropy if std below this value
-    CATASTROPHY_THRESHOLD = 2.3
+    # Catastrope if std below this value
+    CATASTROPHE_THRESHOLD = 2.3
     # [not before x iterations, at least every x iterations]
-    CATASTROPHY_BOUNDS = [100, 800]
+    CATASTROPHE_BOUNDS = [120, 800]
 
     profiles = [
         {
@@ -63,13 +63,13 @@ class GeneticAlgorithm(algo.Algorithm):
         super(GeneticAlgorithm, self).__init__(num_vars, clauses, config)
 
         # We need at least one elite
-        self.NUM_ELITES = max(1, int(self.NUM_CHROMOSOMES * self.ELIRATE))
+        self.NUM_ELITES = max(1, int(self.NUM_CHROMOSOMES * self.ELITES_RATE))
         # Actual selection is twice the size so that we always get pairs
-        self.NUM_SELECTED = int(2 * (self.NUM_CHROMOSOMES * (self.SELRATE / 2)))
+        self.NUM_SELECTED = int(2 * (self.NUM_CHROMOSOMES * (self.SELECTION_RATE / 2)))
 
         self.INI_MUTATION_RATE = self.MUTATION_RATE
 
-        self.last_catastrophy = 0
+        self.last_catastrophe = 0
 
         self.fitnesses = np.zeros(self.NUM_CHROMOSOMES, dtype=np.int)
         self.generate_initial_population()
@@ -143,7 +143,7 @@ class GeneticAlgorithm(algo.Algorithm):
             # get unsatisfied clause
             clause = self.clauses[np.where(e == False)[0][0]]
             # need one literal that can be toggled because it is defined
-            # first look to such a literal in the negative literals
+            # first look for such a literal in the negative literals
             select = 0 if np.any(clause[0]) else 1
             one_lit = np.where(clause[select] == True)[0][0]
             elite_chromosome[one_lit] = not elite_chromosome[one_lit]
@@ -179,10 +179,10 @@ class GeneticAlgorithm(algo.Algorithm):
         else:
             self.MUTATION_RATE = max([self.MUTATION_RATE - diff, 0.2])
 
-    def catastropy(self, iteration):
+    def catastrophe(self, iteration):
         if self.VERBOSE:
-            print 'c', 'Catastrophy', np.std(self.fitnesses)
-        self.last_catastrophy = iteration
+            print 'c', 'Catastrophe', np.std(self.fitnesses)
+        self.last_catastrophe = iteration
         no_elites = self.get_non_elites(self.NUM_SELECTED)
         shape = (len(no_elites), self.num_vars)
         random = np.random.choice([True, False], shape)
@@ -191,14 +191,14 @@ class GeneticAlgorithm(algo.Algorithm):
         self.pop[no_elites] = random
         self.fitnesses[no_elites] = random_fitnesses
 
-    def catastropy_if_necessary(self, iteration, std=0):
-        diff = iteration - self.last_catastrophy
-        if diff < self.CATASTROPHY_BOUNDS[0]:
+    def catastrophe_if_necessary(self, iteration, std=0):
+        diff = iteration - self.last_catastrophe
+        if diff < self.CATASTROPHE_BOUNDS[0]:
             pass
-        elif diff > self.CATASTROPHY_BOUNDS[1]:
-            self.catastropy(iteration)
-        elif std < self.CATASTROPHY_THRESHOLD:
-            self.catastropy(iteration)
+        elif diff > self.CATASTROPHE_BOUNDS[1]:
+            self.catastrophe(iteration)
+        elif std < self.CATASTROPHE_THRESHOLD:
+            self.catastrophe(iteration)
 
     def run(self):
         if self.VERBOSE:
@@ -225,7 +225,7 @@ class GeneticAlgorithm(algo.Algorithm):
                 if self.MR_ADAPTION:
                     self.adapat_mutation_rate_if_needed(iteration, std)
                 if self.CATASTROPHES:
-                    self.catastropy_if_necessary(iteration, std)
+                    self.catastrophe_if_necessary(iteration, std)
 
             selection = self.get_selection()
             for i, pair in enumerate(selection):

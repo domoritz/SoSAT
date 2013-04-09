@@ -10,9 +10,9 @@ parameters = {
     'algo': ga.GeneticAlgorithm,
     'files': ['instances/random_ksat13.dimacs'],
     'params': {
-        'ELIRATE': [0.1, 0.2, 0.3, 0.4],
+        'ELITES_RATE': [0.1, 0.2, 0.3, 0.4],
         'NUM_FOR_FORCE': [0, 1, 2],
-        'SELRATE': [0.2]
+        'SELECTION_RATE': [0.2]
     }
 }
 '''
@@ -20,9 +20,9 @@ parameters = {
     'algo': ga.GeneticAlgorithm,
     'files': ['instances/random_ksat13.dimacs'],
     'params': {
-        'ELIRATE': [0.1, 0.2, 0.3, 0.4],
+        'ELITES_RATE': [0.1, 0.2, 0.3, 0.4],
         'NUM_FOR_FORCE': [0, 1, 2],
-        'SELRATE': [0.2]
+        'SELECTION_RATE': [0.2]
     }
 }
 '''
