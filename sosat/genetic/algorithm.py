@@ -166,7 +166,7 @@ class GeneticAlgorithm(algo.Algorithm):
                 'mr': self.MUTATION_RATE
             })
 
-    def adapat_mutation_rate_if_needed(self, iteration, std=0):
+    def adapt_mutation_rate_if_needed(self, iteration, std=0):
         #self.MUTATION_RATE = max([self.INI_MUTATION_RATE - 1e-9 * iteration ** 4, 0.2])
         #self.MUTATION_RATE = max([self.INI_MUTATION_RATE - 1e-2 * iteration ** 0.5, 0.2])
         #self.MUTATION_RATE = max([self.MUTATION_RATE - 5e-4 * 10, 0.2])
@@ -223,7 +223,7 @@ class GeneticAlgorithm(algo.Algorithm):
                 if self.MR_ADAPTION or self.CATASTROPHES:
                     std = np.std(self.fitnesses)
                 if self.MR_ADAPTION:
-                    self.adapat_mutation_rate_if_needed(iteration, std)
+                    self.adapt_mutation_rate_if_needed(iteration, std)
                 if self.CATASTROPHES:
                     self.catastrophe_if_necessary(iteration, std)
 
