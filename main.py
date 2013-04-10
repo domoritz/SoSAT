@@ -80,8 +80,8 @@ def main():
                      default=42,
                      help='seed for random number generator')
     clp.add_argument('-N', '--number', dest='N',
-                     default=1, type=int,
-                     help='number of processes')
+                     default=4, type=int,
+                     help='number of worker processes')
     clp.add_argument('-f', '--factor', dest='f',
                      default=0, type=int,
                      help='number of factored (most-constrained) variables')
@@ -134,7 +134,7 @@ def main():
         args.N = multiprocessing.cpu_count()
 
     # run profiles
-    dprint("Run {} processes (N = {}, {} factored instances)".format(max(args.N, len(factored_instances)) ,args.N, len(factored_instances)))
+    dprint("Run {} processes (N = {}, {} factored instances)".format(max(args.N, len(factored_instances)), args.N, len(factored_instances)))
 
     # run algorithm for every factored instance with every profile
     for instance in factored_instances:
