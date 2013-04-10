@@ -17,13 +17,20 @@ parameters = {
         'NUM_CHROMOSOMES': [100, 150, 200],
         'ELIRATE': [0.01, 0.1, 0.2],
         'SELRATE': [0.1, 0.2, 0.4],
-        'MUTATION_RATE': [0.1, 0.3, 0.5, 0.7],
+        'MUTATION_RATE': [0.2, 0.4, 0.7],
         'NUM_FORCED': [0, 1, 5],
         'NUM_NEW_RANDOM': [0, 1, 2],
         'NUM_GOOD_START': [0, 1, 10],
         #'ADAPTION_THRESHOLD': [1.0, 2.0, 3.0],
         #'CATASTROPHES': [True],
         #'CATASTROPHES_BOUNDS': [[100, 800], [1000, 200], [100, 250]],
+        #'BLUR_BASIC': [0.2, 0.5, 1.0],
+        #'BLUR_DECLINE': [50, 250, 2000],
+        #'BLUR_ITERATIONS': [1, 25, 100],
+        #'EXP_MCV': [0.1, 0.5, 1.0],
+        #'PH_REDUCE_FACTOR': [0.15, 0.25, 0.5],
+        #'WEIGHT_ADAPTION_DURATION': [10, 100, 250],
+        #'NUM_ANTS': [25, 150, 250],
         'SEED': [42],
         'MAX_ITERATIONS': [25000]
     }       
@@ -50,6 +57,8 @@ def run():
     global semaphore
     algo = parameters['algo']
     files = [open(x) for x in parameters['files']]
+    algo_configs= [0,0,0]
+
     configs = []
     p = parameters['params']
     max_processes = 1
@@ -83,11 +92,15 @@ def run():
                 for i in range(3):
                     if proc[i] == 0 or not proc[i].is_alive() or time.time() - start_proc[i] > 45:
                         try:
+                            algo_configs[i].update({'TIME': -2})
+                            if time.time() - start_proc[i] > 45:
+                                print algo_configs[i]
                             proc[i].terminate()
                         except Exception:
                             pass
 
                         proc[i] = MyProcess(target=run_algorithm, args=(algo, num_vars, clauses, config))
+                        algo_configs[i] = config
                         start_proc[i] = time.time()
                         proc[i].start()
                         started_it = True

@@ -5,10 +5,13 @@ from scipy import stats as scistats
 #FILENAME = "benchmark-ant-ksat_11_first.txt"
 #FILENAME = "benchmark-ant-ksat_11_num_ants.txt"
 #FILENAME = "benchmark_genetic_full.txt"
-FILENAME = "benchmark_genetic_ksat3_all_parameters.txt"
+#FILENAME = "benchmark_ant_ksat-11_2004.txt"
+#FILENAME="ant_all_2000_ksat_11.txt"
+FILENAME="benchmark_genentic-ksat3_all.txt"
+
 SELECT = lambda i: i['TIME'] != -1 #True #i["FILENAME"] == "benchmark_instances/random_ksat11.dimacs"
 
-IGNORE = ["EXP_PH", "SEED", "TIME", "EPSILON", "SOLVED_SUCCESSFULLY", "FILENAME", "MAX_ITERATIONS", "PH_REDUCE_FACTOR", "WEIGHT_ADAPTION_DURATION", "BASIC_BLUR", "BLUR_DECLINE", "CATASTROPHES_BOUNDS", "CATASTROPHES", "NUM_NEW_RANDOM"]
+IGNORE = ["EXP_PH", "SEED", "TIME", "EPSILON", "SOLVED_SUCCESSFULLY", "FILENAME", "MAX_ITERATIONS", "CATASTROPHES_BOUNDS", "CATASTROPHES", "NUM_NEW_RANDOM"]
 
 instances = []
 
@@ -71,7 +74,7 @@ for param in relevant_params:
   graph_params.append(param)
   current_pos += 0.5
 
-colors = ["#31FF9B", "#139FF7", "#FB0013", "#0E00AC", "#FDAF30", "#FC6121", "#720008", "#E8F351"]
+colors = ["#31FF9B", "#139FF7", "#E8F351", "#FB0013", "#0E00AC", "#FDAF30",  "#720008", "#FC6121", "#E8F351"]
 
 fig = plt.figure()
 ay = fig.add_subplot(1,1,1)
@@ -90,13 +93,13 @@ for index in range(len(graph_values)):
 ax.legend([r[0] for r in rects], graph_params, loc=0)  # 0: right bottom
 ax.set_ylabel("runtime (seconds)")
 ax.set_xlabel("parameter values")
-ax.set_yticks(np.arange(5))
+ax.set_yticks(np.arange(23))
 
 flat_graph_pos = [item for sublist in graph_pos for item in sublist]
 print flat_graph_pos
 
-ax.set_xlim((-0.5,22))
-
+ax.set_xlim((-0.5,20.75))
+ax.set_ylim((0,6))
 ax.set_xticks(np.array(flat_graph_pos)+0.4)
 flat_graph_xlabels = [item for sublist in graph_xlabels for item in sublist]
 ax.set_xticklabels(flat_graph_xlabels)
