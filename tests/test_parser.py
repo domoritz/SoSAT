@@ -14,5 +14,13 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_knf(self):
         parser.parse(['p knf 20 0'])
 
+    def test_cse573(self):
+        data = ['ParentOf(Tom,Jill)',
+                '!ParentOf(Frank,Frank) Ancestor(Frank,Frank) !ParentOf(Tom,Jill)']
+        parsed = parser.parse_cse573(data)
+        assert_equal(parsed, (3, [[1], [-2, 3, -1]],
+                     {1: 'ParentOf(Tom,Jill)', 2: 'ParentOf(Frank,Frank)', 3: 'Ancestor(Frank,Frank)'}))
+
+
 if __name__ == '__main__':
     unittest.main()

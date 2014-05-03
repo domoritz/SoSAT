@@ -23,6 +23,7 @@ import random
 
 import sosat.genetic.algorithm as ga
 import sosat.ant.algorithm as aa
+import sosat.walksat.algorithm as ws
 import sosat.parser as parser
 import sosat.preprocessing as preprocessing
 
@@ -31,7 +32,7 @@ VERBOSE = False
 
 def dprint(*args, **kwargs):
     if VERBOSE:
-        __builtins__.print(*(['c'] + list(args)), **kwargs)
+        print(*(['c'] + list(args)), **kwargs)
 
 
 class MyProcess(Process):
@@ -43,26 +44,6 @@ class MyProcess(Process):
         Process.run(self)
 
 
-def print_solution(instance_solution, num_vars):
-    """
-    Print the solution. To retrieve the correct solution, preprocessing steps have to be undone.
-    """
-    if instance_solution is False:
-        # unsatisfiability can only be determined during preprocessing
-        sys.stdout.write("s UNSATISFIABLE\n")
-    elif instance_solution is not None:
-        instance, p_solution = instance_solution
-        solution = preprocessing.restore_original_solution(instance, p_solution, num_vars)
-
-        sol = []
-        for i, lit in enumerate(solution):
-            sol.append(str(i + 1 if lit else -i - 1))
-        sys.stdout.write("v " + ' '.join(sol) + ' 0\n')
-        sys.stdout.write("s SATISFIABLE\n")
-    else:
-        sys.stdout.write("s UNKNOWN\n")
-
-
 def main():
     global VERBOSE
 
@@ -71,7 +52,7 @@ def main():
 
     clp = argparse.ArgumentParser(description='SAT solver.')
     clp.add_argument('-a', '--algorithm', dest='algo',
-                     default='genetic', choices=['genetic', 'ant', 'other'],
+                     default='genetic', choices=['genetic', 'ant', 'walksat'],
                      help='select algorithm for solving')
     clp.add_argument('-v', '--verbose', dest='verbose',
                      default=False, action='store_true',
@@ -85,6 +66,9 @@ def main():
     clp.add_argument('-f', '--factor', dest='f',
                      default=0, type=int,
                      help='number of factored (most-constrained) variables')
+    clp.add_argument('-c', '--cse573', dest='cse573',
+                     default=False, action='store_true',
+                     help='use format for CSE 573')
     clp.add_argument('infile', nargs='?', type=argparse.FileType('r'),
                      default=sys.stdin)
 
@@ -92,13 +76,48 @@ def main():
     VERBOSE = args.verbose
 
     # parse input file
-    num_vars, clauses = parser.parse(args.infile)
-    # preprocess instance and generate factored instances
+    if args.cse573:
+        num_vars, clauses, mapping = parser.parse_cse573(args.infile)
+    else:
+        num_vars, clauses = parser.parse(args.infile)
+
+    def print_solution(instance_solution, num_vars):
+        """
+        Print the solution. To retrieve the correct solution, preprocessing steps have to be undone.
+        """
+        if instance_solution is False:
+            # unsatisfiability can only be determined during preprocessing
+            sys.stdout.write("s UNSATISFIABLE\n")
+        elif instance_solution is not None:
+            instance, p_solution = instance_solution
+            solution = preprocessing.restore_original_solution(instance, p_solution, num_vars)
+            sol = []
+            if args.cse573:
+                for i, lit in enumerate(solution):
+                    orig_lit = i + 1 if lit else -(i + 1)
+                    neg = orig_lit < 0
+                    sol.append(('!' if neg else '') + mapping[abs(orig_lit)])
+                sys.stdout.write("v " + ' '.join(sol) + '\n')
+            else:
+                for i, lit in enumerate(solution):
+                    sol.append(str(i + 1 if lit else -(i + 1)))
+                sys.stdout.write("v " + ' '.join(sol) + ' 0\n')
+            sys.stdout.write("s SATISFIABLE\n")
+        else:
+            sys.stdout.write("s UNKNOWN\n")
+
+    # make clauses sets
+    clauses = preprocessing.clause_dupl_elim(clauses)
+
+    # pre-process instance and generate factored instances
     factored_instances = preprocessing.factored_instances(num_vars, clauses, min(args.f, num_vars))
+
     # filter unsatisfiable factored instances (detected during preprocessing)
     factored_instances = filter(lambda i: i is not False, factored_instances)
+
     # find instances solved completely during preprocessing
     solved_instances = filter(lambda i: len(i[1]) == 0, factored_instances)
+
     # initialize Python random with seed (not used during computation, only for choosing next configuration)
     random.seed(args.seed)
 
@@ -118,6 +137,9 @@ def main():
     elif args.algo == 'ant':
         dprint("Selected ant colony optimization.")
         algo = aa.AntColonyAlgorithm
+    elif args.algo == 'walksat':
+        dprint("Selected WalkSAT.")
+        algo = ws.WalkSAT
     else:
         print("Argument error: No such algorithm.")
 
