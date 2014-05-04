@@ -61,7 +61,10 @@ def main():
                      default=42,
                      help='seed for random number generator')
     clp.add_argument('-N', '--number', dest='N',
-                     default=4, type=int,
+                     default=None, type=int,
+                     help='number of worker processes')
+    clp.add_argument('-i', '--max_iterations', dest='max_iterations',
+                     default=25000, type=int,
                      help='number of worker processes')
     clp.add_argument('-f', '--factor', dest='f',
                      default=0, type=int,
@@ -81,7 +84,7 @@ def main():
     else:
         num_vars, clauses = parser.parse(args.infile)
 
-    def print_solution(instance_solution, num_vars):
+    def print_solution(instance_solution):
         """
         Print the solution. To retrieve the correct solution, preprocessing steps have to be undone.
         """
@@ -124,11 +127,11 @@ def main():
     if len(factored_instances) == 0:
         # if all factored instances are unsatisfiable, then the instance is unsatisfiable
         dprint("Proved unsatisfiable during preprocessing.")
-        print_solution(False, 0)
+        print_solution(False)
         exit()
     elif len(solved_instances) > 0:
         dprint("Solved during preprocessing.")
-        print_solution((solved_instances[0], []), num_vars)
+        print_solution((solved_instances[0], []))
         exit()
 
     if args.algo == 'genetic':
@@ -150,7 +153,7 @@ def main():
 
     processes = []
     queue = Queue()
-    MAX_ITERATIONS = 25000
+    MAX_ITERATIONS = args.max_iterations
 
     if not args.N:
         args.N = multiprocessing.cpu_count()
@@ -158,10 +161,30 @@ def main():
     # run profiles
     dprint("Run {} processes (N = {}, {} factored instances)".format(max(args.N, len(factored_instances)), args.N, len(factored_instances)))
 
+    # no spawning if only one task
+    if max(args.N, len(factored_instances)) == 1:
+        instance = factored_instances[0]
+        profile = algo.profiles[0]
+        config = {
+            'VERBOSE': VERBOSE,
+            'SEED': args.seed,
+            'MAX_ITERATIONS': MAX_ITERATIONS
+        }
+        config.update(profile)
+        dprint("Start", config)
+        dprint("Start one process with config", config)
+
+        a = algo(instance[0], instance[1], config)
+
+        solution = a.run()
+        dprint("Solution", str(solution))
+        print_solution((instance, solution))
+        return
+
     # run algorithm for every factored instance with every profile
     for instance in factored_instances:
         profile = algo.profiles[0]
-        start_process(algo, instance, profile, args.seed, MAX_ITERATIONS, queue, args.verbose, processes)
+        start_process(algo, instance, profile, args.seed, MAX_ITERATIONS, queue, VERBOSE, processes)
 
     for i in range(args.N - len(factored_instances)):
         profile = random.choice(algo.profiles)
@@ -176,7 +199,7 @@ def main():
             MAX_ITERATIONS = int(MAX_ITERATIONS * 1.75)
 
             if solution[1] is not None:
-                print_solution(solution, num_vars)
+                print_solution(solution)
 
                 for process in processes:
                     process.terminate()

@@ -54,7 +54,7 @@ class Algorithm(object):
 
     def evaluate_full_candidate(self, full_candidate):
         """
-        Evalaute a full solution candidate for every clause.
+        Evaluate a full solution candidate for every clause.
         """
         return np.any(self.clauses & full_candidate, axis=(2, 1))
 
