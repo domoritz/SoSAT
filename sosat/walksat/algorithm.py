@@ -7,7 +7,7 @@ class WalkSAT(algo.Algorithm):
     profiles = [
         {
             'P': 0.5,
-            'MAX_ITERATIONS': 1000
+            'MAX_ITERATIONS': 10000
         }
     ]
 
@@ -26,7 +26,12 @@ class WalkSAT(algo.Algorithm):
 
             # return if model satisfies all clauses
             if np.all(evaluated):
+                if self.VERBOSE:
+                    print 'c', 'Found solution after {} iterations'.format(iteration)
                 return model
+
+            if self.VERBOSE:
+                print 'c', 'Satisfied clauses: {} of {}'.format(np.sum(evaluated), self.num_clauses)
 
             unsatisfied = np.where(np.logical_not(evaluated))[0]
             clause_index = np.random.choice(unsatisfied, 1)[0]

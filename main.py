@@ -172,7 +172,7 @@ def main():
         }
         config.update(profile)
         dprint("Start", config)
-        dprint("Start one process with config", config)
+        dprint("Start on same process with config", config)
 
         a = algo(instance[0], instance[1], config)
 
