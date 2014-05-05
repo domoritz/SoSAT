@@ -91,7 +91,7 @@ def main():
         if instance_solution is False:
             # unsatisfiability can only be determined during preprocessing
             sys.stdout.write("s UNSATISFIABLE\n")
-        elif instance_solution is not None:
+        elif instance_solution[1] is not None:
             instance, p_solution = instance_solution
             solution = preprocessing.restore_original_solution(instance, p_solution, num_vars)
             sol = []

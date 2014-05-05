@@ -4,11 +4,10 @@ import sosat.algorithm as algo
 
 
 class WalkSAT(algo.Algorithm):
+    P = 0.5
+
     profiles = [
-        {
-            'P': 0.5,
-            'MAX_ITERATIONS': 10000
-        }
+        {}
     ]
 
     def __init__(self, num_vars=0, clauses=[], config={}):
