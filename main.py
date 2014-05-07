@@ -72,6 +72,9 @@ def main():
     clp.add_argument('-c', '--cse573', dest='cse573',
                      default=False, action='store_true',
                      help='use format for CSE 573')
+    clp.add_argument('-np', '--no-preprocessing', dest='no_preprocessing',
+                     default=False, action='store_true',
+                     help='disable factorization and unit propagation')
     clp.add_argument('infile', nargs='?', type=argparse.FileType('r'),
                      default=sys.stdin)
 
@@ -112,8 +115,11 @@ def main():
     # make clauses sets
     clauses = preprocessing.clause_dupl_elim(clauses)
 
-    # pre-process instance and generate factored instances
-    factored_instances = preprocessing.factored_instances(num_vars, clauses, min(args.f, num_vars))
+    if args.no_preprocessing:
+        factored_instances = [(num_vars, clauses, [], {v: v for v in range(1, num_vars + 1)})]
+    else:
+        # pre-process instance and generate factored instances
+        factored_instances = preprocessing.factored_instances(num_vars, clauses, min(args.f, num_vars))
 
     # filter unsatisfiable factored instances (detected during preprocessing)
     factored_instances = filter(lambda i: i is not False, factored_instances)
