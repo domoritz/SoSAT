@@ -15,6 +15,8 @@ A SAT solver that uses different statistical optimization algorithms to solve SA
 * parallel evaluation from different starting points
 * configurable profiles to parameterize the solver
 
+See [paper.pdf](https://github.com/domoritz/SoSAT/raw/master/paper.pdf) for more details about implementation details and an evaluation of the algorithms.
+
 
 ## Installation
 
