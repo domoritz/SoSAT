@@ -59,7 +59,7 @@ def main():
                      help='print stats and status message')
     clp.add_argument('-s', '--seed', dest='seed', type=int,
                      default=42,
-                     help='seed for random number generator')
+                     help='seed for random number generator, 0 means random')
     clp.add_argument('-N', '--number', dest='N',
                      default=None, type=int,
                      help='number of worker processes')
@@ -86,6 +86,9 @@ def main():
         num_vars, clauses, mapping = parser.parse_cse573(args.infile)
     else:
         num_vars, clauses = parser.parse(args.infile)
+
+    if args.seed == 0:
+        args.seed = random.randint(0, 1e9)
 
     def print_solution(instance_solution):
         """

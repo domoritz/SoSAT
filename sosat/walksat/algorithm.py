@@ -35,7 +35,7 @@ class WalkSAT(algo.Algorithm):
             unsatisfied = np.where(np.logical_not(evaluated))[0]
             clause_index = np.random.choice(unsatisfied, 1)[0]
             clause = self.raw_clauses[clause_index]
-            if self.P > np.random.random_sample():
+            if self.P < np.random.random_sample():
                 lit = np.random.choice(clause, 1)[0]
                 flip = abs(lit) - 1
             else:
